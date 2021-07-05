@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Data 和 methods</title>
+  </head>
+  <body>
+    <div id="counter">
+      <h1>计算属性</h1>
+
+      <h2>计算属性是什么</h2>
+      和对象的计算属性类似拥有 getter 和  setter 两个属性，当获取值时会调用 getter 在设置值时会调用 setter
+      <div>1. {{counter}}{{counterStr}}</div>
+      <div>2. <button @click="setCounter">增加</button></div>
+      <h2>计算属性和直接使用method的区别</h2>
+      计算属性 是有缓存机制的，如果多次调用某一个值时只会促发该值的 getter 而不是从新计算，而 使用 method 是要每次计算的
+      <h1>watch</h1>
+      <h2>watch 是什么</h2>
+      watch 是侦听器 当某个被检测值发生改变后，会促发检测方法。执行相关操作
+      <h2>watch 和 计算属性的区别</h2>
+      watch 是检测某一个值，是对某值改变后执行的一个附加
+      computed 是依赖某一些值，在被访问时会调用相关值
+    </div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      // 声明式渲染
+      const Counter = {
+        data() {
+          return {
+            counter: 0,
+          };
+        },
+        mounted() {},
+        computed: {
+          counterStr() {
+            let list = [
+              '零',
+              '壹',
+              '贰',
+              '叁',
+              '肆',
+              '伍',
+              '陆',
+              '柒',
+              '捌',
+              '玖',
+            ];
+            return this.counter
+              .toString()
+              .split('')
+              .map((item) => list[item])
+              .join('');
+          },
+        },
+        methods: {
+          setCounter() {
+            this.counter++;
+          },
+          toChinese(num) {
+            let list = [
+              '零',
+              '壹',
+              '贰',
+              '叁',
+              '肆',
+              '伍',
+              '陆',
+              '柒',
+              '捌',
+              '玖',
+            ];
+            return num
+              .toString()
+              .split('')
+              .map((item) => list[item])
+              .join('');
+          },
+        },
+      };
+      const app = Vue.createApp(Counter);
+      let vm = app.mount('#counter');
+      vm.$data.counter = 10; // 页面值会跟着改变
+      vm.$data.counter2 = 10; // 页面值没有任何变化
+    </script>
+  </body>
+</html>

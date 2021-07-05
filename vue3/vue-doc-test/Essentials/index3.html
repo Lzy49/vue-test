@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>模版语法</title>
+  </head>
+  <body>
+    <style>
+      #red {
+        color: red;
+      }
+    </style>
+    <div id="root">
+      <h1>插值</h1>
+      <!-- 插入值 start-->
+      <h2>插入值</h2>
+      <div>1. Message: {{ msg }}</div>
+      <div v-once>2. v-once Message: {{msg}}</div>
+      <button @click="setMessage">修改msg值</button>
+      <!-- 插入值 end-->
+
+      <!-- 插入HTML start-->
+      <h2>插入HTML</h2>
+      <div>1. 普通插入{{rawHtml}}</div>
+      <div v-html="rawHtml"></div>
+      <!-- 插入HTML end -->
+
+      <h2>绑定属性</h2>
+      <!-- 绑定属性 Attribute start-->
+      <div :id="testId">1.使用 :id 绑定属性</div>
+      <div v-bind:id="testId">2.使用 v-bind: 绑定属性</div>
+      <!-- 绑定属性 Attribute end -->
+
+      <h2>使用JavaScript表达式</h2>
+      <div>1. 100 - {{msg}} = {{100 - msg}}</div>
+      <div>
+        2. 我是 ： {{text}} 我反过来是 : {{text.split('').reverse().join('')}}
+      </div>
+      <h1>指令</h1>
+      <h2>参数</h2>
+      <h3>v-if</h3>
+      <div>
+        msg <span v-if="msg > 10">大于</span> <span v-else>小于</span> 10
+      </div>
+      <h3>v-bind</h3>
+      <a v-bind:href="url">{{url}}</a>
+      <h3>v-on</h3>
+      <button v-on:click="setUrl"> 修改 url</button>
+      <h2>动态参数</h2>
+      <button v-on:[eventname]="alert">当前事件是 {{eventname}}</button>
+      > 动态参数不能使用大写字符
+      > 动态参数如果是 null 则会移除绑定
+      > 动态参数表达式有一些语法约束，因为某些字符，如空格和引号，放在 HTML attribute 名里是无效的。可以使用计算属性解决。
+      <h2>修饰符</h2>
+      <form  v-on:submit.prevent="onSubmit">
+        <input type="submit" value="提交">
+      </form>
+      <h2>缩写</h2>
+      <a :href="url">{{url}}  v-bind 缩写为 :</a>
+      <button @[eventname]="alert">当前事件是 {{eventname}}  v-on 缩写为 @</button>
+     
+
+    </div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      const app = Vue.createApp({
+        data() {
+          return {
+            msg: 0,
+            rawHtml: '<span style="color:red">2. 使用 v-html 插入</span>',
+            testId: 'red',
+            text: '我是文字 123',
+            url: '',
+            eventname:'click'
+          };
+        },
+        methods: {
+          setMessage() {
+            this.msg++;
+          },
+          setUrl() {
+            this.url = 'www.baidu.com';
+          },
+          alert(){
+            alert(this.eventname)
+            this.eventname = 'mouseleave'
+          },
+          onSubmit(){
+            alert('提交数据')
+          }
+        },
+      });
+      app.mount('#root');
+    </script>
+  </body>
+</html>

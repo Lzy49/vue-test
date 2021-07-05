@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>介绍</title>
+  </head>
+  <body>
+    <div id="counter">
+      <h1>介绍</h1>
+      <div>1. Counter: {{ counter }}</div>
+      <div v-bind:title="message">2. msg</div>
+      <div>3. <button v-on:click="reverseMessage">反转 Message</button></div>
+      <div>4. <input v-model="message" /></div>
+      <div>6. <span v-if="message === '你好'">我在 message === 你好时出现</span></div>
+      <div>7. <span v-for="item in list" style="margin: 5px;">{{item}},</span></div>
+      <div>8. <test-component username="妞妞"></test-component></div>
+    </div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      // 声明式渲染 
+      const Counter = {
+        data() {
+          return {
+            counter: 0,
+            message: 'You loaded this page on ' + new Date().toLocaleString(),
+            list:[1,2,3]
+          };
+        },
+        mounted() {
+          // setInterval(() => {
+          //   this.counter++;
+          // }, 1000);
+        },
+        methods:{
+          reverseMessage(){
+            let message = this.message
+            alert(message.split('').reverse().join(''))
+          }
+        }
+      };
+      const app = Vue.createApp(Counter);
+      app.component('test-component',{
+        props: ['username'],
+        template:`<span>你好{{username}},我是 test-component 组件 </span>`
+      })
+      app.mount('#counter');
+      
+    </script>
+  </body>
+</html>

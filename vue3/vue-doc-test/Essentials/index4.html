@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Data 和 methods</title>
+  </head>
+  <body>
+    <div id="counter">
+      <div>1. {{counter}}{{counter2}}</div>
+      <div>2. <button @click="setCounter">增加</button></div>
+      <div>3.{{toChinese(counter)}}</div>
+    </div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      // 声明式渲染
+      const Counter = {
+        data() {
+          return {
+            counter: 0,
+          };
+        },
+        mounted() {},
+        methods: {
+          setCounter() {
+            this.counter++;
+          },
+          toChinese(num) {
+            let list = [
+              '零',
+              '壹',
+              '贰',
+              '叁',
+              '肆',
+              '伍',
+              '陆',
+              '柒',
+              '捌',
+              '玖',
+            ];
+            return num
+              .toString()
+              .split('')
+              .map((item) => list[item])
+              .join('');
+          },
+        },
+      };
+      const app = Vue.createApp(Counter);
+      let vm = app.mount('#counter');
+      vm.$data.counter = 10; // 页面值会跟着改变
+      vm.$data.counter2 = 10; // 页面值没有任何变化
+    </script>
+  </body>
+</html>

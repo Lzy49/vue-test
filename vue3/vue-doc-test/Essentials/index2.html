@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>应用 & 组件实例</title>
+  </head>
+  <body>
+    <div id="app">
+      <test-component></test-component>
+    </div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      test2();
+      /* 组件实例 property */
+      function test2() {
+        const app = Vue.createApp({
+          data() {
+            return { count: 4 };
+          },
+          methods: {
+            test() {
+              console.log('test');
+            },
+          },
+        });
+        const vm = app.mount('#app');
+        console.log(vm.count); // => 4
+        console.log(vm.test()); // => test
+        console.log(vm.$attrs); // => Proxy
+      }
+      /* 生命周期钩子 */
+      function test3() {
+        Vue.createApp({
+          data() {
+            return { count: 1 };
+          },
+          created() {
+            // `this` 指向 vm 实例
+            console.log('count is: ' + this.count); // => "count is: 1"
+          },
+        });
+      }
+    </script>
+  </body>
+</html>
