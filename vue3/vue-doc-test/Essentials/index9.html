@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>事件处理</title>
+  </head>
+  <body>
+    <style>
+      #root button,
+      a {
+        margin: 0 5px;
+      }
+    </style>
+    <div id="root">
+      <button @click="test">onTest</button><br /><br />
+      <button @click="num++">我现在是 {{num}}</button>
+      <button @click="alert('你好')">你好</button>
+      <button @click="alert('你好'),test()">调用两个方法</button>
+      <div>
+        <div @click="msg('你好我是盒子')">
+          <button @click="alert('你好')">没有任何修饰符</button>
+          <button @click.stop="alert('你好')">使用stop,不会冒泡</button>
+          <a href="https://www.baidu.com" @click="alert('你好')">跳到百度</a>
+          <a href="https://www.baidu.com" @click.prevent="alert('你好')"
+            >想跳百度但是不成功</a
+          >
+          <div @click.capture="msg('你好，我会比button先执行')">
+            <button @click="msg('你好我是button')">点击我</button>
+          </div>
+        </div>
+        <div @click.self="msg('我只会被我自己促发')">
+          <button @click="msg('你好我是button')">点击我</button>
+        </div>
+        <button @click.once="alert('我只会被点一次')">我只能被点击一次</button>
+      </div>
+
+      <div
+        style="
+          height: 100px;
+          width: 50px;
+          background-color: red;
+          overflow: scroll;
+        "
+        @scroll.passive="msg('我不可能一直被促发知道不')"
+        @scroll="msg('我不可能一直被促发知道不')"
+      >
+        <div style="height: 1000px"></div>
+      </div>
+    </div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      const app = Vue.createApp({
+        data() {
+          return {
+            num: 0,
+          };
+        },
+        methods: {
+          msg(e) {
+            console.log(e);
+          },
+          test() {
+            alert('我是test');
+          },
+          alert(msg) {
+            alert(msg);
+          },
+        },
+      });
+      app.mount('#root');
+    </script>
+  </body>
+</html>

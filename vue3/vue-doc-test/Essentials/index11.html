@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>组件基础</title>
+  </head>
+  <body>
+    <div id="root">
+      <h2>基本组件使用</h2>
+      <test-component></test-component>
+      <h2>组件传值</h2>
+      <props-component name="传值组件"></props-component>
+      <h2>调用父组件方法</h2>
+      <event-component :style="style" @set="changeStyle"></event-component>
+      <h3>使用v-model</h3>
+      <v-model-component v-model="text"></v-model-component>{{text}}
+      <slot-component>你好吧亲</slot-component>
+      <h3>动态组件</h3>
+      <component :is="'slot-component'">你好吧亲</component>
+      <h3></h3>
+    </div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      // 组件示例
+      const app = Vue.createApp({
+        data() {
+          return {
+            style: {
+              color: 'red',
+            },
+            text: '1',
+          };
+        },
+        methods: {
+          changeStyle() {
+            this.style.color = 'green';
+          },
+        },
+      });
+      app.component('test-component', {
+        data() {
+          return { name: 'test-component' };
+        },
+        template: '<div>我叫{{name}}</div>',
+      });
+      app.component('props-component', {
+        props: ['name'],
+        template: '<div>我叫{{name}}</div>',
+      });
+      app.component('event-component', {
+        props: ['style'],
+        emits: ['set'],
+        template: `<div>
+          <div :style="style">我就是这个样子</div>
+          <button @click="$emit('set')">改变颜色</button>
+        </div>`,
+      });
+      app.component('v-model-component', {
+        props: ['modelValue'],
+        template: `<div><input :value="modelValue" @input="$emit('update:modelValue', $event.target.value)"/></div>`,
+      });
+      app.component('slot-component',{
+        template:`<div><slot></slot></div>`
+      })
+      app.mount('#root');
+    </script>
+  </body>
+</html>

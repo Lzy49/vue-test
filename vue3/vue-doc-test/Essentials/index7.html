@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>条件渲染</title>
+  </head>
+  <body>
+    <div id="root">
+      <div v-if="canShow">当 canShow 为 true 时</div>
+      <div v-else style="color:red">当 canShow 为 false 时</div>
+      <button @click="setCanShow">设置 canShow 为返值 </button>
+      <div style="color:green">
+        <template v-if="num === 1">
+          我是数字 1
+        </template>
+        <template v-else-if="num === 2">
+          我是 数字 2
+        </template>
+        <template v-else>
+          我是 其他数字
+        </template>
+      </div>
+      <button @click="setNum">修改num</button>
+      <div v-show="canShow">
+        我是 v-show 可以显示的内容
+      </div>
+    </div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      const app = Vue.createApp({
+        data() {
+          return {
+            canShow: false,
+            num:1
+          };
+        },
+        created() {
+          console.log('玩呗');
+        },
+        methods: {
+          setCanShow() {
+            this.canShow = !this.canShow;
+          },
+          setNum(){
+            this.num++
+          }
+        },
+      });
+      app.mount('#root');
+    </script>
+  </body>
+</html>

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Class 与 Style 绑定</title>
+  </head>
+  <body>
+    <style>
+      .red {
+        color: red;
+      }
+      .font1 {
+        font-size: 22px;
+      }
+      .green {
+        color: green;
+      }
+    </style>
+    <!-- class -->
+    <div id="root">
+      <div :class="class1">1. 你好的我颜色是红色，字体大小是22px</div>
+      <div :class="class2">2. 你好的我颜色也是红色，字体大小是22px</div>
+      <button @click="setClass2">修改 2 的颜色 为绿色</button>
+      <test-component :class="class2"> </test-component>
+    </div>
+    <div id="root2">
+      <div :style="style1">1. 你好的我颜色是红色，字体大小是22px</div>
+      <div :style="style2">2. 你好的我颜色也是红色，字体大小是22px</div>
+      <button @click="setStyle">修改颜色 为绿色</button>
+      <test-component :style="style2"> </test-component>
+    </div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      // 关于 class 的定义
+      const app = Vue.createApp({
+        data() {
+          return {
+            class1: ['red', 'font1'],
+            class2: {
+              red: true,
+              font1: true,
+            },
+          };
+        },
+        methods: {
+          setClass2() {
+            this.class2 = {
+              font1: true,
+              green: true,
+            };
+          },
+        },
+      });
+      app.component('test-component', {
+        template: `<span>你好,我是 test-component 组件 </span>`,
+      });
+      app.mount('#root');
+      // 关于 style 的定义
+      const app2 = Vue.createApp({
+        data() {
+          return {
+            style1: {
+              color: 'red',
+              fontSize: '22px',
+            },
+            style2: [],
+          };
+        },
+        created(){
+          this.style2 = [this.style1]
+        },
+        methods: {
+          setStyle() {
+            this.style1.color = 'green';
+          },
+        },
+      });
+      app2.component('test-component', {
+        template: `<span>你好,我是 test-component 组件 </span>`,
+      });
+      app2.mount('#root2');
+    </script>
+  </body>
+</html>

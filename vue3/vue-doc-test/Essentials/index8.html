@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>列表渲染</title>
+  </head>
+  <body>
+    <div id="root">
+      <ul>
+        <li v-for="item of items" :key="item.message">{{ item.message }}</li>
+        <li v-for="item in items2" :key="item">{{item}}</li>
+        <li v-for="(item,key) of items" :key="item.message">{{key}}:{{item.message}}</li>
+        <li v-for="(item,key,index)  in items2" :key="item">{{index}}.{{key}}:{{item}}</li>
+        <li v-for="item  in 10" :key="item">{{item}}</li>
+      </ul>
+      <text-box v-for="item of items2" :text="item"></text-box>
+    </div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      const app = Vue.createApp({
+        data() {
+          return {
+            items: [
+              {
+                message: 'one',
+              },
+              {
+                message: 'two',
+              },
+              {
+                message: 'three',
+              },
+              {
+                message: 'four',
+              },
+            ],
+            items2: {
+              message1: 'one',
+              message2: 'two',
+              message3: 'three',
+              message4: 'four',
+            },
+          };
+        },
+      });
+      app.component('text-box',{
+        props:['text'],
+        template:'<div>{{text}}</div>'
+      })
+      app.mount('#root');
+    </script>
+  </body>
+</html>

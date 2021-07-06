@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>表单输入绑定</title>
+  </head>
+  <body>
+    <div id="root">
+      <h2>v-model 绑定</h2>
+      <div><input type="text" v-model="value1" />{{value1}}</div>
+      <div><textarea v-model="value2"></textarea>{{value2}}</div>
+      <div>
+        <select v-model="value3">
+          <option value="1">one</option>
+          <option value="2">two</option>
+        </select>
+        {{value3}}
+      </div>
+      <div>
+        <label for="jack">Jack</label>
+        <input type="checkbox" id="john" value="John" v-model="value4" />
+        <label for="john">John</label>
+        <input type="checkbox" id="mike" value="Mike" v-model="value4" />
+        <label for="mike">Mike</label>
+        {{value4}}
+      </div>
+      <div>
+        <input type="radio" id="one" value="One" v-model="value5" /> one
+        <input type="radio" id="two" value="Two" v-model="value5" /> two
+        {{value5}}
+      </div>
+      <div>
+        <input type="radio" v-model="value6" value="a" /> a {{value6}}
+        <input type="checkbox" v-model="value7" true-value="yes" /> checkbox
+        {{value7}}
+      </div>
+      <div>
+        <h2>修饰符</h2>
+        <input v-model.number="value8" type="number" />只能数字 {{value8}}<br />
+        <input v-model.lazy="value9" type="number" /> 只检测change {{value9}}<br>
+        <input v-model.trim="value10" /> 去掉首尾空格 {{value10}}
+      </div>
+    </div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      const app = Vue.createApp({
+        data() {
+          return {
+            value1: '',
+            value2: '',
+            value3: '',
+            value4: [],
+            value5: '',
+            value6: '',
+            value7: '',
+            value8: '',
+            value9: '',
+            value10:''
+          };
+        },
+      });
+      app.mount('#root');
+    </script>
+  </body>
+</html>
