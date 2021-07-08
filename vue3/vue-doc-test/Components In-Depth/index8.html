@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Provide / Inject</title>
+  </head>
+  <body>
+    <div id="root">
+      数据
+      <button @click="add">添加小紫</button>
+      {{list}}
+      <my-component></my-component>
+    </div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      const myComponent = {
+        components: {
+          'min-box': {
+            inject: ['listLength','listLengthOnline'],
+            template: `<div>我爸爸的爸爸的list的长度是 {{listLength}} 实时其实是 {{listLengthOnline.value}}</div>`,
+          },
+        },
+        template: `<min-box></min-box>`,
+      };
+      const app = Vue.createApp({
+        components: {
+          'my-component': myComponent,
+        },
+        data() {
+          return {
+            list: ['小红', '小绿', '小紫'],
+          };
+        },
+        methods: {
+          add() {
+            this.list.push('小紫');
+          },
+        },
+        provide() {
+          return {
+            listLength: this.list.length,
+            listLengthOnline: Vue.computed(() => this.list.length),
+          };
+        },
+      });
+      app.mount('#root');
+    </script>
+  </body>
+</html>

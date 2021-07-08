@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>props 验证</title>
+  </head>
+  <body>
+    <div id="root">
+      <component-1 title="第一"></component-1>
+      <component-2 title="第二"></component-2>
+      <component-3></component-3>
+      <component-4 :info="{title:'第四'}"></component-4>
+    </div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      /**
+       * 关于传参
+       */
+      const app = Vue.createApp({});
+      app.component('component-1', {
+        props: ['title'],
+        template: `<div>我是component-1 我的title是 「{{title}}」</div>`,
+      });
+      app.component('component-2', {
+        props: {
+          title: {
+            type: String,
+          },
+        },
+        template: `<div>我是component-2 我的title是 「{{title}}」</div>`,
+      });
+
+      app.component('component-3',{
+        props:{
+          title:{
+            type:String,
+            default:'第三'
+          }
+        },
+        template:`<div>我是component-3 我的title是 「{{title}}」</div>`
+      })
+      app.component('component-4',{
+        props:{
+          info:{
+            type:Object,
+            validator:function(value){
+              return value.title !== undefined
+            }
+          }
+        },
+        template:`<div>我是component-4 我的title是 「{{info.title}}」</div>`
+      })
+      app.mount('#root');
+    </script>
+  </body>
+</html>

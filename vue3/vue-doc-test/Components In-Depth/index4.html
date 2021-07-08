@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>非 Prop 的 Attribute</title>
+  </head>
+  <body>
+    <div id="root">
+      <component-1 @change="changeFun" style="color:red"></component-1>
+      <component-2 @change="changeFun" style="color:red"></component-2>
+    </div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      const app = Vue.createApp({
+        methods: {
+          changeFun(e) {
+            console.log(e);
+          },
+        },
+      });
+      app.component('component-1', {
+        template: `
+          <select>
+            <option value="1">1</option>
+            <option value="2">2</option>
+          </select>
+        `,
+      });
+      app.component('component-2', {
+        inheritAttrs: false,
+        props:['size'],
+        template: `
+          <select @change="$attrs.onChange">
+            <option value="1">1</option>
+            <option value="2">2</option>
+          </select>
+        `,
+      });
+      app.mount('#root');
+    </script>
+  </body>
+</html>

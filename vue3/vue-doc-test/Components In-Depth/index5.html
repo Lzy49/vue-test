@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>非 Prop 的 Attribute</title>
+  </head>
+  <body>
+    <div id="root">
+      <component-1 @my-change="changeFun" ></component-1>
+    </div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      const app = Vue.createApp({
+        methods: {
+          changeFun(e) {
+            console.log('喝酒没',e);
+          },
+        },
+      });
+      app.component('component-1', {
+        emits:{
+          myChange(e){
+            console.log(e)
+            if(typeof e === 'string'){
+              return true
+            }else{
+              return false
+            }
+          }
+        },
+        template: `
+          <input @change="(e)=>$emit('myChange',e.target.value)" />
+        `,
+      });
+      app.mount('#root');
+    </script>
+  </body>
+</html>

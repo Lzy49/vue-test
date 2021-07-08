@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>组件注册</title>
+  </head>
+  <body>
+    <div id="root-1">
+      <component-1></component-1>
+    </div>
+    <div id="root-2"></div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      const component1 = {
+        template:
+          '<div>我是组件component1 我可以调用全局组件<component-2></component-2></div>',
+      };
+      const app = Vue.createApp({
+        data() {
+          return {};
+        },
+        components: {
+          'component-1': component1,
+        },
+      });
+      app.component('component-2', {
+        template: '<div>我是component-2,我可以被随时随地调用</div>',
+      });
+      app.mount('#root-1')
+    </script>
+  </body>
+</html>

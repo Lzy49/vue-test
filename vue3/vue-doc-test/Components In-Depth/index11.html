@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>处理边界情况</title>
+</head>
+<body>
+  <div id="root">
+    <div v-once >我是不会动的 {{num}}</div>
+    <button @click="upDate()">强制更新</button>
+    <button @click="add()">我要加num{{num}}</button>
+  </div>
+  <script src="https://unpkg.com/vue@next"></script>
+  <script>
+    const app = Vue.createApp({
+      data(){
+        return {
+          num:0
+        }
+      },
+      methods:{
+        upDate(){
+          console.log('123')
+          this.$forceUpdate()
+        },
+        add(){
+          this.num ++;
+        }
+      }
+    })
+    app.mount('#root')
+  </script>
+</body>
+</html>

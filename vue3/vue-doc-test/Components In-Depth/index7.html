@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>插槽</title>
+  </head>
+  <body>
+    <style>
+      #root,#root2{
+        border: 1px solid red;
+        margin: 10px;
+      }
+    </style>
+    <div id="root">
+      <wrap-box>
+        <template v-slot:header="data"> 我是头部{{data.dd}} 你</template>
+        <template v-slot:footer> 我是脚 </template>
+        <template v-slot:default="{data}">
+          <component-1>
+            <component-2>添加{{info}}{{data}}</component-2> ｜
+            <component-2></component-2>
+          </component-1>
+        </template>
+      </wrap-box>
+    </div>
+    <div id="root2">
+      <wrap-box>
+        <template #header="{dd}">我是头部2{{dd}}</template>
+        <template #[key]>我是脚</template>
+        <template #default="{data}">我是中间内容{{data}}</template>
+      </wrap-box>
+    </div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      const wrapBox = {
+        template: `
+        <header>
+          <slot name="header" :dd="'我是子组件传入内容'"></slot>
+        </header>
+        <main>
+          <slot :data="'我是 子组件传入内容'"></slot>
+        </main>
+        <footer>
+          <slot name="footer"></slot>
+        </footer>
+      `,
+      };
+      const app = Vue.createApp({
+        data() {
+          return {
+            info: '你好呀',
+          };
+        },
+      });
+      app.component('component-1', {
+        template: `<button style="font-size:30px"><slot></slot></button>`,
+      });
+      app.component('component-2', {
+        template: `<span style="color:red"><slot>我是备用内容</slot></span>`,
+      });
+      app.component('wrap-box', wrapBox);
+      app.mount('#root');
+      const app2 = Vue.createApp({
+        data(){
+          return{
+            key:'footer'
+          }
+        }
+      });
+      app2.component('wrap-box',wrapBox);
+      app2.mount('#root2');
+    </script>
+  </body>
+</html>

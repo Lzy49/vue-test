@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>动态组件 & 异步组件</title>
+  </head>
+  <body>
+    <div id="root">
+      <ul class="tab-bt" @click="setComponent">
+        <li data-id="1">compoent-1</li>
+        <li data-id="2">compoent-2</li>
+        <li data-id="3">compoent-3</li>
+      </ul>
+      <keep-alive>
+        <component :is="componentName"></component>
+      </keep-alive>
+    </div>
+    <div id="root2">
+      <ul>
+        <li data-id="1">compoent-1</li>
+        <li data-id="2">compoent-2</li>
+        <li data-id="3">compoent-3</li>
+      </ul>
+      <async-component></async-component>
+    </div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      const { defineAsyncComponent, createApp } = Vue;
+      /**
+       * 动态组件使用缓存
+       */
+      const app = createApp({
+        components: {
+          'component-1': {
+            template: '<div>我是组件1</div>',
+            mounted() {
+              console.log('我被调用了-1');
+            },
+          },
+          'component-2': {
+            template: '<div>我是组件2</div>',
+            created() {
+              console.log('我被调用了-2');
+            },
+          },
+          'component-3': {
+            template: '<div>我是组件3</div>',
+            created() {
+              console.log('我被调用了-3');
+            },
+          },
+        },
+        created() {
+          console.log(123);
+        },
+        data() {
+          return {
+            componentName: '',
+          };
+        },
+        methods: {
+          setComponent(e) {
+            console.log(e.srcElement.dataset.id);
+            this.componentName = `component-` + e.srcElement.dataset.id;
+          },
+        },
+      });
+      app.mount('#root');
+      /**
+       * 异步组件
+       */
+      const app2 = createApp({
+        components: {
+          'async-component': defineAsyncComponent(
+            () =>
+              new Promise((resolive, rejest) => {
+                setTimeout(() => {
+                  resolive({
+                    template: '我是异步组件',
+                  });
+                }, 3000);
+              })
+          ),
+        },
+      });
+      app2.mount('#root2');
+    </script>
+  </body>
+</html>

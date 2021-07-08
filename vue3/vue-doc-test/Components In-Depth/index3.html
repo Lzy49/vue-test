@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>props 传参</title>
+  </head>
+  <body>
+    <div id="root">
+      <component v-bind="info" is-new ></component>
+    </div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      /**
+       * 关于传参
+       */
+      const app = Vue.createApp({
+        data() {
+          return {
+            info: {
+              title: '标题',
+              content: '内容内容',
+            },
+          };
+        },
+      });
+      app.component('component', {
+        props: { title: String, content: String, isNew: Boolean },
+        created() {
+          console.log(this.isNew);
+        },
+        template: `<div>
+          <h2>{{title}}</h2>
+          <string>{{isNew ? '新文章':'旧文章'}}</string>
+          <div>{{content}}</div>
+        </div>`,
+      });
+      app.mount('#root');
+    </script>
+  </body>
+</html>

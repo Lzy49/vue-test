@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>v-model</title>
+  </head>
+  <body>
+    <div id="root">
+      <component-1 v-model:value1="value1" v-model.cc="value"></component-1>
+      {{value1}} 和 {{value}}
+    </div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      const app = Vue.createApp({
+        data() {
+          return { value1: 'fff', value: '' };
+        },
+      });
+      app.component('component-1', {
+        props: {
+          value1: String,
+          modelValue: String,
+          modelModifiers: {
+            default: () => ({}),
+          },
+        },
+        emits: ['update:value1', 'update:modelValue'],
+        template: `
+        <div>
+          <input type="text" :value="modelValue" @change="$emit('update:modelValue',$event.target.value)" />
+          <input type="text" :value="value1" @change="aaa" />
+        </div>
+        `,
+        methods: {
+          aaa(e) {
+            console.log(this.modelModifiers);
+            this.$emit('update:value1', e.target.value);
+          },
+        },
+      });
+      app.mount('#root');
+    </script>
+  </body>
+</html>
