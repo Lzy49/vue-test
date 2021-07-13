@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>状态过渡</title>
+  </head>
+  <body>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      const Demo = {
+        data() {
+          return {
+            items: [1, 2, 3, 4, 5, 6, 7, 8, 9],
+            nextNum: 10,
+          };
+        },
+        methods: {
+          randomIndex() {
+            return Math.floor(Math.random() * this.items.length);
+          },
+          add() {
+            this.items.splice(this.randomIndex(), 0, this.nextNum++);
+          },
+          remove() {
+            this.items.splice(this.randomIndex(), 1);
+          },
+          reverse() {
+            this.items.reverse();
+          },
+        },
+      };
+
+      Vue.createApp(Demo).mount('#list-demo');
+    </script>
+  </body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>过渡 & 动画概述</title>
+  </head>
+  <body>
+    <style>
+      .box {
+        opacity: 0;
+        width: 400px;
+        height: 300px;
+        background: #000;
+        color: #fff;
+        font-size: 22px;
+        transition: opacity 0.25s;
+      }
+      .show {
+        opacity: 1;
+      }
+    </style>
+    <div id="root">
+      <h1>通过修改class 和 style 执行 css3 动画</h1>
+      <div class="box" :class="{'show':divShow}">{{name}}</div>
+      <div class="box" :style="{opacity:styleValue}"></div>
+      <button @click="divShow = !divShow">{{divShow ? '隐藏' : '显示'}}</button>
+      <button @click="styleValue = Number(!styleValue)">{{styleValue ? '隐藏' : '显示'}}</button>
+    </div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      const app = Vue.createApp({
+        data() {
+          return {
+            name: 'q',
+            divShow: false,
+            styleValue:0
+          };
+        }
+      });
+      app.mount('#root');
+    </script>
+  </body>
+</html>

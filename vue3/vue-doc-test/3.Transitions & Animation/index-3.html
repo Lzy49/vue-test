@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>列表过渡</title>
+  </head>
+  <body>
+    <div id="list-demo">
+      <button @click="add">Add</button>
+      <button @click="remove">Remove</button>
+      <button @click="reverse">reverse</button>
+      <transition-group name="list" tag="p">
+        <span v-for="item in items" :key="item" class="list-item">
+          {{ item }}
+        </span>
+      </transition-group>
+    </div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      const Demo = {
+        data() {
+          return {
+            items: [1, 2, 3, 4, 5, 6, 7, 8, 9],
+            nextNum: 10,
+          };
+        },
+        methods: {
+          randomIndex() {
+            return Math.floor(Math.random() * this.items.length);
+          },
+          add() {
+            this.items.splice(this.randomIndex(), 0, this.nextNum++);
+          },
+          remove() {
+            this.items.splice(this.randomIndex(), 1);
+          },
+          reverse() {
+            this.items.reverse() 
+          },
+        },
+      };
+
+      Vue.createApp(Demo).mount('#list-demo');
+    </script>
+    <style>
+      .list-item {
+        display: inline-block;
+        margin-right: 10px;
+      }
+      .list-enter-active,
+      .list-leave-active {
+        transition: all 1s ease;
+      }
+      .list-enter-from,
+      .list-leave-to {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      .list-move {
+        transition: transform 0.8s ease;
+      }
+    </style>
+  </body>
+</html>
