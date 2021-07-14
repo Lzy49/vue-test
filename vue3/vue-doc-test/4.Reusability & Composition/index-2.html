@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>自定义指令</title>
+  </head>
+  <body>
+    <style>
+      .box {
+        background: red;
+        width: 20px;
+        height: 20px;
+      }
+    </style>
+    <div id="root">
+      <input v-focus />
+      <label>左右</label><input type="range" min="0" max="500" v-model="leftSize" />
+      <label>上下</label><input type="range" min="0" max="500" v-model="topSize" />
+      <div class="box" v-fixed:left="leftSize" v-fixed:top="topSize"></div>
+    </div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      /** 简单的自己定义 标签 **/
+      const app = Vue.createApp({
+        data() {
+          return {
+            leftSize: 19,
+            topSize: 0
+          };
+        }
+      });
+      /* 带有该标记的dom在页面刷新时，自动聚焦*/
+      app.directive('focus', {
+        mounted(el) {
+          el.focus();
+        }
+      });
+      app.directive('fixed', {
+        mounted(el, { arg, value }) {
+          el.style.position = 'fixed';
+          el.style[arg] = value + 'px';
+        },
+        updated(el, { arg, value }) {
+          el.style[arg] = value + 'px';
+        }
+      });
+      app.mount('#root');
+    </script>
+  </body>
+</html>

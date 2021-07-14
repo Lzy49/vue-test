@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>渲染函数</title>
+  </head>
+  <body>
+    <div id="root">
+      <!-- <slot-component>
+        <template #header>上</template>
+        <template #default>中</template>
+        <template #footer>下</template>
+      </slot-component> -->
+    </div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      const slotComponent = {
+        created() {
+          console.log('我被调用le ');
+        },
+        render() {
+          return h(`div`, [
+            h(
+              'header',
+              {
+                color: 'red'
+              },
+              this.$slots.header &&
+                this.$slots.header({
+                  name: '吉娃娃'
+                })
+            ),
+            h(
+              'main',
+              {
+                color: 'blue'
+              },
+              this.$slots.default()
+            ),
+            h(
+              'footer',
+              {
+                color: 'green'
+              },
+              this.$slots.footer && this.$slots.footer()
+            )
+          ]);
+        }
+      };
+      const h = Vue.h;
+      const app = Vue.createApp({
+        data() {
+          return {
+            show: false
+          };
+        },
+        render() {
+          const _this = this;
+          return h('div', {}, [
+            h(
+              'button',
+              {
+                onclick: () => {
+                  this.show = !this.show;
+                }
+              },
+              '你好'
+            ),
+            this.show
+              ? h(
+                  slotComponent,
+                  {},
+                  {
+                    header: (props) => {
+                      console.log(props);
+                      return h('span', '头部' + props.name);
+                    },
+                    footer: (props) => h('span', '脚'),
+                    default: (props) => h('span', '内容')
+                  }
+                )
+              : h('div', {}, '你好')
+          ]);
+        }
+      });
+      // app.component('slot-component', slotComponent);
+      app.mount('#root');
+    </script>
+  </body>
+</html>

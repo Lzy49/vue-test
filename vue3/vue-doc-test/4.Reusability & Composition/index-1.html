@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>混入</title>
+  </head>
+  <body>
+    <div id="root">
+      <p @click="sayHi">俺叫 {{name}} ，今年 {{age}}岁</p>
+      <text-component></text-component>
+    </div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      /* 单组件混入 */
+      const myMixin = {
+        data() {
+          return {
+            name: '白云',
+            age: 19
+          };
+        },
+        created() {
+          console.log('我叫mixins');
+        },
+        methods: {
+          sayHi() {
+            alert('大家好');
+          }
+        }
+      };
+      const app = Vue.createApp({
+        mixins: [myMixin],
+        data() {
+          return { name: '张淑芬' };
+        },
+        created() {
+          console.log('我叫组件');
+        },
+        methods: {
+          sayHi() {
+            alert('同志们好');
+          }
+        }
+      });
+      /* 全局混入 */
+      const publicMixin = {
+        data(){
+          return {
+            name:'找'
+          }
+        },
+        created() {
+          console.log('我是全局的 minxin 页面上有几个组件，我就被调用几次');
+        }
+      };
+      app.config.optionMergeStrategies.data = (toVal, fromVal) => {
+        console.log('我被调用了',toVal, fromVal);
+      };
+      app.mixin(publicMixin);
+      app.component('text-component', {
+        template: `<div>不要纠结</div>`
+      });
+      app.mount('#root');
+    </script>
+  </body>
+</html>
