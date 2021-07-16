@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div id="app">
+      {{state.age}}
+      <button @click="state.age ++">+</button>
+      <button @click="stop">no</button>
+    </div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      const { reactive, watch } = Vue;
+      const app = Vue.createApp({
+        setup() {
+          const state = reactive({
+            name: '张飞',
+            age: 19
+          });
+          /**
+           * watch 只监听一个值
+           * - 第一个值 是要监听的数据源，
+           *  - 可以是一个 get 函数
+           *    - get 函数可以返回一个需要监听的值
+           *    - get 函数还可以返回 一个数组，数组中是一些需要监听的值
+           *  - 也可以是一个 ref 值。
+           *  - 也可以是一个数组，数组中每一项都是一个 ref 值
+           * - 第二个值 是一个函数，该函数接收 2个 值 ，新的值，和旧的值
+           **/
+          // 监听单个值
+          watch(
+            () => state.age,
+            (newVal, oldVal) => {
+              console.log(newVal, oldVal);
+            }
+          );
+          // 监听多个值
+          watch(
+            () => {
+              return Object.keys(state).map((key) => state[key]);
+            },
+            (newVal, oldVal) => {
+              console.log(newVal, oldVal);
+            }
+          );
+          // 尝试检查深度嵌套对象或数组中的 property 变化时，需要 deep 选项设置为 true。
+          let stop = watch(
+            () => JSON.parse(JSON.stringify(state)),
+            (newVal, oldVal, onInvalidate) => {
+              onInvalidate(() => {
+                clearTimeout(b);
+              });
+              const b = setTimeout(() => {
+                console.log('深检测', newVal, oldVal);
+              }, 1000);
+            },
+            {
+              deep: true
+            }
+          );
+          return { state, stop };
+        }
+      });
+      app.mount('#app');
+    </script>
+  </body>
+</html>

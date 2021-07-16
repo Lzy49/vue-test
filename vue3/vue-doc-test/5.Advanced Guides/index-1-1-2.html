@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>响应式-深入响应性原理-Vue 如何跟踪变化</title>
+  </head>
+  <body>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      /* 方法 */
+      /** 对 依赖 进行一个封装 */
+      const stateEffects = {};
+      function reactive(state) {
+        return new Proxy(state, {
+          get(target, property) {
+            // 在 get 时 收集
+            !Array.isArray(stateEffects[target]) && (stateEffects[target] = []);
+            stateEffects[target].push(...effects);
+            return Reflect.get(...arguments);
+          },
+          set(target, property, value) {
+            const v = Reflect.set(...arguments);
+            stateEffects[target].map((item) => item());
+            return v;
+          }
+        });
+      }
+      /** 创建一个依赖的方法 */
+      const effects = [];
+      function createEffect(fun) {
+        const effect = () => {
+          effects.push(effect);
+          fun();
+          effects.pop();
+        };
+        effect();
+      }
+
+      /* test */
+      // 创建一个 可以收集依赖的值
+      const state = reactive({
+        a:10,
+        b:11
+      })
+      let c, d;
+      createEffect(() => {
+        c = state.a + state.b;
+      });
+      createEffect(() => {
+        d = state.a * state.b;
+      });
+      console.log('a 修改 为 10 ->',c,d)
+      state.a = 20
+      console.log('a 修改 为 20 ->',c,d)
+      state.a = 1000
+      console.log('a 修改 为 20 ->',c,d)
+    </script>
+  </body>
+</html>

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>响应式计算和侦听</title>
+  </head>
+  <body>
+    <div id="root">
+      {{count}}
+      <button @click="count++">+</button>
+    </div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      const { ref, computed, watchEffect, onBeforeUpdate, onUpdated } = Vue;
+      const app = Vue.createApp({
+        setup() {
+          let count = ref(0);
+          /**
+           * - watchEffect 会在 onBeforeUpdate 之前打印
+           * - 如果想要在 onUpdated 之后更新可以设置 配置 flush 为 post 默认为 pre
+           * - onTrack 和 onTrigger 是两个函数接收 一个包含有关所依赖项信息的调试器事件 专门用来调试
+           *  - onTrack 会在响应式 property 或 ref 作为依赖项被追踪时被调用。
+           *  - onTrigger 将在依赖项变更导致副作用被触发时被调用。
+           **/
+          onBeforeUpdate(() => {
+            console.log('beforeUpdate');
+          });
+          watchEffect(
+            () => {
+              console.log('watchEffect', count.value);
+            },
+            {
+              flush: 'pre'
+            }
+          );
+          return { count };
+        }
+      });
+      app.mount('#root');
+    </script>
+  </body>
+</html>

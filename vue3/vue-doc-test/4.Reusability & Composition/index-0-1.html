@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>组合式 API 基础 - 介绍</title>
+  </head>
+  <body>
+    <div id="root">
+      <component-1 user="123"></component-1>
+    </div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      const { ref, onMounted, watch, computed } = Vue;
+      const component1 = {
+        props: {
+          user: {
+            type: String,
+            required: true
+          }
+        },
+        created() {
+          console.log('created');
+        },
+        setup(props, context) {
+          console.log(props); // { user: '' }
+          const count = ref(0);
+          const list = [1, 2, 3];
+          const v = 1;
+          const fun = (val) => {
+            list.push(val);
+          };
+          const computedValue = computed(() => count.value * 2);
+
+          onMounted(function () {
+            console.log('onMounted');
+          });
+          watch(count, function (newValue, oldValue) {
+            console.log('count', newValue, oldValue);
+          });
+          watch(list, function (newValue, oldValue) {
+            // 没有用
+            console.log('list', newValue, oldValue);
+          });
+          return { list, count, v, fun, computedValue }; // 这里返回的任何内容都可以用于组件的其余部分
+        },
+        template: `
+        <div>
+          1
+          <p>{{count}} 和 {{computedValue}}</p>
+          {{list}}{{v}}
+          <button @click="count++ ">+</button>
+          <button @click="v++">add</button>
+          <button @click="fun('你好')">add</button>
+        </div>
+        `
+      };
+      const app = Vue.createApp({
+        components: {
+          'component-1': component1
+        },
+        created() {
+          console.log('123');
+        }
+      });
+      app.mount('#root');
+    </script>
+  </body>
+</html>

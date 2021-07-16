@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>模板引用</title>
+  </head>
+  <body>
+    <div id="root">
+      <input type="text" ref="title" />
+      <div v-for="(item, i) in list" :ref="el => { if (el) divs[i] = el }">
+        {{ item }}
+      </div>
+      <button @click="setList()">+</button>
+      <button @click="log()">打印</button>
+    </div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      const { ref, onMounted, h, onBeforeUpdate, onUpdated, watchEffect } = Vue;
+      const app = Vue.createApp({
+        setup() {
+          /* //关于 单个 ref
+            const title = ref(null);
+            onMounted(() => {
+              console.log(title.value);
+            });
+            return {
+              title
+            };
+            return () =>
+              h('div', {
+                ref: title
+              });
+          */
+          const list = ref([1, 2, 3, 4]);
+          const divs = ref([]);
+          onBeforeUpdate(() => {
+            divs.value = [];
+          });
+          watchEffect(
+            () => {
+              console.log(divs.value); // => <div></div>
+            },
+            {
+              flush: 'post'
+            }
+          );
+          return {
+            list,
+            divs
+          };
+        },
+        methods: {
+          setList() {
+            this.list.push(this.list.length);
+          },
+          log() {
+            console.log(this.divs);
+          }
+        }
+      });
+      app.mount('#root');
+    </script>
+  </body>
+</html>

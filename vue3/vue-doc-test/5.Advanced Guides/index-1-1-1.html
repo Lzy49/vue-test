@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>响应式-深入响应性原理-Vue 如何知道那些代码在执行</title>
+  </head>
+  <body>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      /* 方法 */
+      const effects = [];
+      function createEffect(fun) {
+        const effect = () => {
+          effects.push(effect);
+          fun();
+        };
+        effect();
+      }
+      /* test */
+      let a = 11;
+      let b = 10;
+      let c, d;
+      createEffect(() => {
+        c = a + b;
+      });
+      console.log(c);
+      createEffect(() => {
+        d = a * b;
+      });
+      console.log(d);
+
+      console.log('...................a 修改值 为 20...................');
+      a = 20;
+      effects.map((item) => item());
+      console.log(c, d);
+    </script>
+  </body>
+</html>

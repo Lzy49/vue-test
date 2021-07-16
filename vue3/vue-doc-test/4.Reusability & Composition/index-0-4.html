@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Provide / Inject</title>
+  </head>
+  <body>
+    <div id="app">
+      <component-1></component-1>
+      <button @click="setName">修改 {{name}}</button>
+    </div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      /**
+       * Provide 提供一些内容给子组件使用
+       * Inject 接收父组件Provide提供的 property
+       * 以下是 这两者在 setup 中的表现
+       */
+      const { h, provide, inject, ref, readonly } = Vue;
+      const component1 = {
+        setup(props, content) {
+          // 接收普通参数
+          const title = inject('title');
+          // 接收响应参数
+          const name = inject('name');
+          const setName = inject('setName');
+          name.value = 123;
+          return () =>
+            h('list', {}, [
+              h('li', {}, `title:${title}`),
+              h('li', {}, `name:${name.value}`),
+              h(
+                'button',
+                {
+                  onclick: () => setName('test')
+                },
+                '修改名称为test'
+              )
+            ]);
+        }
+      };
+      const app = Vue.createApp({
+        components: {
+          'component-1': component1
+        },
+        setup() {
+          // 传递普通数据
+          provide('title', '标题');
+          // 传递响应数据
+          let name = ref('名字');
+          // 这里使用 readonly 函数的原因是防止子组件修改父组件数据
+          provide('name', readonly(name));
+          provide('setName', (v) => {
+            name.value = v;
+          });
+          return {
+            name
+          };
+        },
+        methods: {
+          setName() {
+            this.name = '张飞';
+          }
+        }
+      });
+      app.mount('#app');
+    </script>
+  </body>
+</html>

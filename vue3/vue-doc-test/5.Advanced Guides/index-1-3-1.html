@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>响应式计算和侦听</title>
+  </head>
+  <body>
+    <div id="root">
+      <button @click="count++">+</button>
+      <button @click="stop()">noWatch</button>
+      <button @click="stop2()">关闭 watch 2</button>
+    </div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      const { ref, computed, watchEffect } = Vue;
+      const app = Vue.createApp({
+        setup() {
+          let count = ref(0);
+          // 直接传入 get 来设置计算值
+          let plusOne = computed(() => count.value + 1);
+          // 设置 set 和 get 的计算值
+          let plusOne2 = computed({
+            get() {
+              return count.value + 1;
+            },
+            set(v) {
+              count.value = v - 1;
+            }
+          });
+          console.log(plusOne.value, plusOne2.value);
+          // plusOne.value++; // error
+          count.value++;
+          console.log(plusOne.value, plusOne2.value);
+          plusOne2.value = 200;
+          console.log(plusOne.value);
+
+          // 监听 监听的返回值是一个停止函数，停止后不会再继续监听
+          const stop = watchEffect(() => {
+            console.log('count 被改变为' + count.value);
+          });
+          /**
+           * - watchEffect 接收的函数接收一个参数，这个参数是一个函数，该函数接收一个值，
+           * - 这个值是一个清楚副作用的方法，这个方法会在两种情况下运行
+           *  - 即将重新执行时
+           *  - 侦听器被停止 (如果在 setup() 或生命周期钩子函数中使用了 watchEffect，则在组件卸载时)
+           */
+          function log(v) {
+            let b = setTimeout(() => {
+              console.log('count 被改了！？' + v);
+            }, 1000);
+            return b;
+          }
+          let stop2 = watchEffect((onInvalidate) => {
+            onInvalidate(() => {
+              clearTimeout(v);
+            });
+            const v = log(count.value);
+          });
+          return { count, stop, stop2 };
+        }
+      });
+      app.mount('#root');
+    </script>
+  </body>
+</html>

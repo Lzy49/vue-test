@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>组合式 API 基础 - 生命周期钩子</title>
+  </head>
+  <body>
+    <div id="root">
+      <component-1 user="123"></component-1>
+    </div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      const { ref, onMounted, watch, computed } = Vue;
+      const component1 = {
+        props: {
+          user: {
+            type: String,
+            required: true
+          }
+        },
+        created() {
+          console.log('created');
+        },
+        setup(props, context) {
+          onMounted(function () {
+            console.log('onMounted');
+          });
+          return {};
+        },
+        template: `<div></div>`
+      };
+      const app = Vue.createApp({
+        components: {
+          'component-1': component1
+        },
+        created() {
+          console.log('123');
+        }
+      });
+      app.mount('#root');
+    </script>
+  </body>
+</html>

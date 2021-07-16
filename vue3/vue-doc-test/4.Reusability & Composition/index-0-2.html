@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>组合式 API 基础 - Setup</title>
+  </head>
+  <body>
+    <div id="root">
+      <component-1 v-bind="user" @sayHi="sayHi"></component-1>
+      <button @click="setUser()">set user</button>
+    </div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      const { toRef, toRefs, ref, reactive, onMounted, watch, computed, h } =
+        Vue;
+      const component1 = {
+        props: {
+          name: {
+            type: String
+          },
+          age: {
+            type: Number
+          }
+        },
+        emits: ['sayHi'],
+        created() {
+          console.log('created');
+        },
+        setup(props, context) {
+          console.log(props, context);
+          const { age } = toRefs(props);
+          const user = toRef(props, 'name');
+
+          const list = reactive({
+            nameList: ['张三', '李四']
+          });
+          console.log(list.nameList, age.value);
+          return { list, age }; // 这里返回的任何内容都可以用于组件的其余部分
+        },
+        template: `
+          <div>
+            {{age}}
+            {{list.nameList}}
+          </div>
+        `
+      };
+      const app = Vue.createApp({
+        data() {
+          return {
+            user: {
+              name: '张三',
+              age: 18,
+              sex: '男'
+            }
+          };
+        },
+        components: {
+          'component-1': component1
+        },
+        setup() {
+          return () => h('div', []);
+        },
+        methods: {
+          setUser() {
+            this.user.name = '王五';
+          },
+          sayHi() {
+            console.log('你好');
+          }
+        },
+        created() {
+          console.log('123');
+        }
+      });
+      app.mount('#root');
+    </script>
+  </body>
+</html>

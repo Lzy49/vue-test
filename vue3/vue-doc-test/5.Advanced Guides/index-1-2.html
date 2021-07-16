@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>响应性基础</title>
+  </head>
+  <body>
+    <h1>响应性基础</h1>
+    <div id="root">
+      <p>{{nested.count}}</p>
+      <p>{{count}}</p>
+      <p>{{nested.name}}</p>
+      <button @click="count++">+</button>
+      <button @click="nested.count++">+</button>
+      <button @click="nested.name = '张三丰'">修改name</button>
+    </div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      const { ref, reactive, toRefs, readonly } = Vue;
+      const app = Vue.createApp({
+        setup() {
+          // 利用 reactive 创建一个状态树
+          const state = reactive({
+            name: '百度'
+          });
+          // 利用 toRefs 来解构状态树
+          let { name } = toRefs(state);
+          // 直接创建一个 响应状态
+          const count = ref(2);
+          // 利用 readonly 让属性变为只读属性
+          const copyName = readonly(state);
+          copyName.name = '张三丰';
+          // 抛出后 readonly 就不好使了
+          return {
+            count,
+            nested: reactive({
+              count,
+              name: copyName.name
+            })
+          };
+        },
+        methods: {}
+      });
+      app.mount('#root');
+    </script>
+  </body>
+</html>
