@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>选项/资源</title>
+  </head>
+  <body>
+    <div id="root">
+      <div v-red>color</div>
+      <component-text></component-text>
+    </div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      const componentText = {
+        template: `你好`
+      };
+      const app = Vue.createApp({
+        // directives 组件实例中可用的指令
+        directives: {
+          red: {
+            mounted(el) {
+              el.style.color = 'red';
+            }
+          }
+        },
+        // components 组件
+        components: {
+          componentText
+        }
+      });
+      app.mount('#root');
+    </script>
+  </body>
+</html>

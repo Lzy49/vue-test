@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>全局 API</title>
+  </head>
+  <body>
+    <div id="root">
+      <component-1></component-1>
+    </div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      const {
+        // 用来创建vue应用的
+        createApp,
+        // 用来创建虚拟DOM的
+        h,
+        // 用来定义组件的
+        defineComponent,
+        defineAsyncComponent, // 异步组件
+        // 用来调用全局组件的
+        resolveComponent,
+        resolveDynamicComponent,
+        // 用来绑定自定义 指令的
+        resolveDirective,
+        withDirectives,
+        ref,
+        // 不常用
+        createRenderer,
+      } = Vue;
+      // 创建组件
+      const component1 = defineComponent({
+        mounted() {
+          console.log('我被用到了');
+        },
+        template: `<div>你好</div>`
+      });
+      // 创建异步组件
+      const asyncComponent = defineAsyncComponent(
+        () =>
+          new Promise((resolve, reject) => {
+            setTimeout(() => {
+              resolve({
+                render() {
+                  return h('div', { style: { color: 'blue' } }, '你好');
+                }
+              });
+            }, 1000);
+          })
+      );
+      // 创建 Vue 应用
+      const app = createApp(
+        {
+          props: ['name'],
+          components: {},
+          setup(props) {
+            const componentName = ref('component-1');
+            const getDirective = resolveDirective('get');
+            return () =>
+              // 利用 h 创建dom
+              h('div', { style: { color: 'red' } }, [
+                `我的名字叫做${props.name}`,
+                // 利用 resolveComponent 通过名字解析组件
+                h(resolveComponent(componentName.value), {}, ''),
+                // 利用 resolveDynamicComponent 通过名字解析组件
+                h(resolveDynamicComponent(componentName.value, {}, '')),
+                h(asyncComponent, {}, ''),
+                h(
+                  'div',
+                  {
+                    resolveDirective
+                  },
+                  '你好'
+                ),
+                h(
+                  'button',
+                  {
+                    onclick() {
+                      componentName.value = 'component-2';
+                      console.log(componentName.value);
+                    }
+                  },
+                  '编辑组件'
+                ),
+                withDirectives(h('div',{},''), [[getDirective,'针不错','']]),
+                h('div',{
+                  ref:"box"
+                },componentName.value)
+              ]);
+          },
+          mounted(){
+            
+          }
+        },
+        {
+          name: '张菲菲'
+        }
+      );
+      // 定义 自定义 指令 
+      app.directive('get', {
+        mounted(el, { arg, value }) {
+          // 聚焦元素
+          console.log(el, arg, value);
+          el.innerHTML = value;
+        },
+        updated(el, { arg, value }) {
+          console.log(el, arg, value);
+          el.innerHTML = value;
+        }
+      });
+      app.component('component-1', component1);
+      app.component('component-2', asyncComponent);
+      app.mount('#root');
+    </script>
+  </body>
+</html>

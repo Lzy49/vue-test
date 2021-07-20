@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>选项 - Date</title>
+  </head>
+  <body>
+    <div id="root">
+      <component-test
+        ref="d"
+        :color="'red'"
+        @set-name="setName"
+      ></component-test>
+      {{ageText}}{{busItem}}
+      <button @click="age++">add age</button>
+      <button @click="setName('刘备')">setName</button>
+      <input type="text" @change="busItem = $event.target.value" />
+    </div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      const { h } = Vue;
+      const app = Vue.createApp({
+        // 1. data 函数返回组件实例的 data 对象。
+        // 2. 一旦被侦听后，就无法在根数据对象上添加响应式 property，因此应该在初始化时就将所有根 property 添加
+        // 3. 创建实例后 可以通过 vm.$data 访问，也可以直接访问，
+        // 4. 以 _ 和 $ 开头的 property 可能与 Vue 内部的变量 property 冲突 ，所以尽量不要使用。可以使用 vm.$data 访问
+        // 5. data 函数可以是一个箭头函数，虽然 this值 不指向 vm,但是可以通过函数的第一个参数来获取vm
+        data() {
+          return {
+            name: '张飞',
+            $name: '张飞',
+            $data: '你好',
+            age: 19,
+            bus: [1, 2, 3, 4, 5]
+          };
+        },
+        /*
+         methods 方法
+         1. methods 将被混入到组件实例中。可以直接通过 VM 实例访问这些方法，或者在指令表达式中使用。
+         2. methods 定义的 function 函数 的 this 值 是 vm 实例。 箭头函数的 this 值 是 window
+        */
+        methods: {
+          setName(v) {
+            this.name = v;
+            this.$name = v;
+            console.log(this.name, this.$name, this.$data, this.$data.$data);
+            console.log(this.$refs.d.color);
+          }
+        },
+        /*
+         computed 计算属性
+         1. computed 计算属性 定义的 property 会混入组件实例中
+         2. computed 接收 一个 function 或者 一个 Object
+          - 接收 function 时 表示 get方法 必须抛出一个值 
+          - 接收 Object 时 可以定义 get 和 set 两个方法 
+         3. computed 和 直接使用 method 的区别是 computed 有缓存机制，而 method 每次都会进行计算
+        */
+        computed: {
+          ageText: function () {
+            return this.age + '岁';
+          },
+          busItem: {
+            get() {
+              return this.bus[this.bus.length - 1];
+            },
+            set(v) {
+              console.log(v);
+              this.bus.push(v);
+            }
+          }
+        },
+        /*
+          watch 观察
+          1. watch 接收 一个对象 ，对象中的每一个key都被检测。如果 key所指的 property 发生改变就会执行 该 key 指向的 方法
+          2. watch 的 每一个 key 不但可以使用一个 fun 作值，也可以传入一个对象，该对象的值为
+            - handler 值修改后促发的方法
+            - deep 是否深度 检测
+            - immediate 立即执行一次 handler
+            - flush 执行回调的时机 
+              - 'pre' 渲染前被调用 
+              - 'post' 渲染后被调用 
+              - 'sync' 渲染同时
+        */
+        watch: {}
+      });
+      const componentTest = {
+        /* 
+         props 
+         1. props 可以接收 一个 Array 或者 Object ，Array 只能配置 key 值， Object 可以配置更多选项
+         2. 当 props 接收类型 为 Object 时 option 可以是以下选项
+          - type 数据类型 可以传 类过来（可以是自定义的class）
+          - default 数据默认值 如果默认函数是引用类型则必须通过工厂函数返回。
+          - required 数据是否必填，可以使用 Boolean 来判断 。
+          - validator 自定义数据校验，可接收一个函数，函数必须返回一个 Boolean 
+         3. 在 props 时无法 访问 this (vm)
+        */
+        props: {
+          color: {
+            validator(value) {
+              console.log(this); // Window
+              return value === 'green';
+            },
+            required: true,
+            default: 'red',
+            type: String
+          }
+        },
+        /*
+          emits 接收父组件传来的方法
+          1.emits 可以是数组或对象，从组件触发自定义事件，emits 可以是简单的数组，也可以是对象，后者允许配置事件验证。
+          2.在对象语法中，每个 property 的值可以为:
+          - null  无验证
+          - function 验证函数。验证函数将接收传递给 $emit 调用的其他参数。验证函数应返回布尔值，以表示事件参数是否有效。
+        */
+        emits: {
+          setName(v) {
+            console.log(v);
+            return true;
+          }
+        },
+        data: (vm) => {
+          console.log(vm.color);
+          return {};
+        },
+        render() {
+          return h(
+            'div',
+            {
+              onclick: () => this.$emit('setName', '成龙')
+            },
+            'component-test'
+          );
+        }
+      };
+      app.component('component-test', componentTest);
+      const vm = app.mount('#root');
+    </script>
+  </body>
+</html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>应用配置</title>
+  </head>
+  <body>
+    <div id="root">
+      <p>图片路径：{{IMGURL}}</p>
+      <p>是否有1:{{has(1)}}</p>
+      {{name}}
+      <compontent-box>你好</compontent-box>
+    </div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      const compontentBox = {
+        tempelate: `<div style="color:red">你好</div>`
+      };
+      const app = Vue.createApp({
+        world: '地球',
+        data() {
+          return {
+            name: `我是组件本体`
+          };
+        },
+        mounted() {
+          console.log('玩呗');
+          console.log(this.IMGURL);
+          console.log(this.$options.world);
+        }
+      });
+      app.mixin({
+        world: '世界',
+        data() {
+          return {
+            name: `我是 mixin 组件`
+          };
+        }
+      });
+      /**
+       * vue 错误捕捉
+       * err 错误信息
+       * vm
+       * info vue 特定的错误信息，比如错误所在的生命周期钩子
+       */
+      app.config.errorHandler = (err, vm, info) => {
+        console.log(err, vm, info);
+      };
+      /**
+       * vue 警告捕捉
+       * msg 警告信息
+       * vm
+       * trace 组件的继承关系追踪
+       */
+      app.config.warnHandler = (msg, vm, trace) => {
+        console.log(msg, vm, trace);
+      };
+      /**
+       * 定义全局都能够使用的api 和  变量
+       */
+      app.config.globalProperties.IMGURL = 'https';
+      app.config.globalProperties.has = (v) => [1, 2, 3, 4, 5].includes(v);
+      /**
+       * vue 碰到不认识的标签会报 Unknown custom element，符合该函数返回true时则不会报。
+       */
+      app.config.isCustomElement = (tag) => {
+        console.log(tag);
+        return true;
+      };
+      /**
+       * maxin 混合时的自定义标签自定义处理方式
+       */
+      app.config.optionMergeStrategies.world = (
+        parent = '',
+        child = '',
+        vm
+      ) => {
+        console.log('我被执行了', parent, child);
+        return parent + child;
+      };
+      app.config.optionMergeStrategies.performance = true;
+      app.mount('#root');
+    </script>
+  </body>
+</html>

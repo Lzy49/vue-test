@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>组合</title>
+  </head>
+  <body>
+    <div id="root">
+      <component-test></component-test>
+    </div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      const minxin = {
+        created() {
+          console.log('我是minxin');
+        }
+      };
+      const f = {
+        created() {
+          console.log('我是 f');
+        }
+      };
+      const app = Vue.createApp({
+        mixins: [minxin],
+        extends: f,
+        provide:{
+          name:'张飞'
+        }
+      });
+      app.component('component-test',{
+        inject:['name'],
+        setup(){
+          return (vm)=>{
+            return '你好'
+          }
+        },
+        created(){
+          console.log(this.name)
+        }
+      })
+      app.mount('#root');
+    </script>
+  </body>
+</html>

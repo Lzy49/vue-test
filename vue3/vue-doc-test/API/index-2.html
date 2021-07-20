@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>应用 API</title>
+  </head>
+  <body>
+    <div id="root">
+      <tag-box></tag-box>
+      <tag-box-2></tag-box-2>
+      <div v-get:name="directiveValue"></div>
+      <button @click="directiveValue++">directiveValue+</button>
+    </div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      const { h, defineAsyncComponent, ref, inject } = Vue;
+      const app = Vue.createApp({
+        setup() {
+          const directiveValue = ref(0);
+          return { directiveValue };
+        }
+      });
+      // component API 绑定全局组件
+      app.component('tag-box', {
+        setup() {
+          const age = inject('age');
+          return () => h('div', {}, '你好我是 tag-box 我 inject 了' + age);
+        }
+      });
+      app.component(
+        'tag-box-2',
+        defineAsyncComponent(() =>
+          Promise.resolve({
+            setup() {
+              return () => h('div', {}, '你好我是 tag-box-2');
+            }
+          })
+        )
+      );
+      // 应用配置
+      console.log(app.config);
+      // 自定义指令
+      app.directive('get', {
+        mounted(el, { arg, value }) {
+          // 聚焦元素
+          console.log(el, arg, value);
+          el.innerHTML = value;
+        },
+        updated(el, { arg, value }) {
+          console.log(el, arg, value);
+          el.innerHTML = value;
+        }
+      });
+      // 混合
+      app.mixin({
+        data() {
+          return {
+            name: '123'
+          };
+        }
+      });
+      // 提供全局的仓库
+      app.provide('age', 11);
+      // 安装 Vue.js 插件
+      app.use(function(vm){
+        console.log(vm)
+      })
+      // vue 版本号
+      console.log(app.version)
+      // 挂载
+      app.mount('#root');
+      // 卸载组件
+      setTimeout(()=>{
+        app.unmount();
+      },5000)
+    </script>
+  </body>
+</html>

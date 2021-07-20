@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>生命周期钩子</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      const app = Vue.createApp({
+        beforeCreate() {
+          console.log('创建应用前');
+        },
+        created() {
+          console.log('创建应用后');
+        },
+        beforMount() {
+          console.log('挂载DOM上之前');
+        },
+        mounted() {
+          console.log('挂载后');
+          console.log(this)
+          this.$nextTick(() => {
+            console.log('DOM 彻底挂载好');
+          });
+        },
+        beforUpdate() {
+          console.log('数据更新前');
+        },
+        updated() {
+          console.log('数据更新后');
+        },
+        beforeUnmount() {
+          console.log('卸载前');
+        },
+        unMounted() {
+          console.log('卸载后');
+        },
+        activated() {
+          console.log('keep-alive 缓存激活');
+        },
+        deactivated() {
+          console.log('keep-alive 缓存停用');
+        },
+        errorCaptured() {
+          console.log('子组件报错时');
+        },
+        renderTracked() {
+          console.log('虚拟DOM渲染时');
+        },
+        renderTriggered() {
+          console.log('虚拟DOM被改变时');
+        }
+      });
+      app.mount('#root');
+    </script>
+  </body>
+</html>

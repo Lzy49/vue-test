@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>全局 API</title>
+  </head>
+  <body>
+    <div id="root">
+      <div ref="messageBox">{{message}}</div>
+      <input @change="changeMessage" />
+      <min-component class="red"></min-component>
+    </div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      const {
+        createApp,
+        ref,
+        // 更新DOM后再执行
+        nextTick,
+        // 用来合并 vDOM 的 props
+        mergeProps,
+        // 可以访问 CSS 模块 然而只能在工程化中的页面中使用 - -！
+        useCssModule,
+        // Vue 版本号
+        version,
+        h
+      } = Vue;
+      // 利用 mergeProps 合并 props
+      const minComponent = {
+        setup() {
+          const style = useCssModule();
+          console.log('style',style);
+          return {}
+        },
+        render() {
+          console.log(this.$attrs);
+          return h(
+            'div',
+            {},
+            h(
+              'div',
+              mergeProps(
+                {
+                  // 该 class 将与 $attrs 中的其他 class 合并。
+                  class: 'active'
+                },
+                this.$attrs
+              ),
+              '当前 vue 版本 为 ：' + version
+            )
+          );
+        }
+      };
+      const app = createApp({
+        components: {
+          minComponent
+        },
+        setup() {
+          // nextTick
+          const message = ref('Hello!');
+          const messageBox = ref();
+          const changeMessage = async (newMessage) => {
+            message.value = newMessage.target.value;
+            console.log('更新前', messageBox.value.innerHTML);
+            await nextTick();
+            console.log('更新后', messageBox.value.innerHTML);
+          };
+          // mergeProps
+          return { message, changeMessage, messageBox };
+        }
+      });
+      app.mount('#root');
+    </script>
+    <style module>
+      .green {
+        color: green;
+      }
+    </style>
+  </body>
+</html>
