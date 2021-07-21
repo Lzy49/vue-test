@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>实例方法</title>
+  </head>
+  <body>
+    <div id="root">
+      <component-box @set-age="setAge"></component-box>
+      <button @click="age++">+</button>
+    </div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      let num = 10;
+      const { h } = Vue;
+      const componentBox = {
+        emits: ['setAge'],
+        methods: {
+          forceUpdate() {
+            this.$forceUpdate();
+          }
+        },
+        render() {
+          return h('div', {}, [
+            h(
+              'p',
+              {
+                ref: 'p'
+              },
+              num
+            ),
+            h(
+              'button',
+              {
+                onClick: () => {
+                  num = 100;
+                  this.$emit('setAge', 19);
+                }
+              },
+              'setAge'
+            ),
+            h(
+              'button',
+              {
+                onClick: () => {
+                  this.forceUpdate();
+                  console.log(this.$refs.p.innerHTML);
+                  this.$nextTick(() => {
+                    console.log(this.$refs.p.innerHTML);
+                  });
+                }
+              },
+              'forceUpdate'
+            )
+          ]);
+        }
+      };
+      const app = Vue.createApp({
+        components: {
+          componentBox
+        },
+        data() {
+          return { age: 19 };
+        },
+        methods: {
+          setAge(v) {
+            this.age = v;
+          }
+        },
+        mounted() {
+          this.$watch(
+            'age',
+            function () {
+              console.log('我被改变了我是 age 我先是' + this.age);
+            },
+            {
+              immediate: true
+            }
+          );
+        }
+      });
+      app.mount('#root');
+    </script>
+  </body>
+</html>

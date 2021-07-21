@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>实例 property</title>
+  </head>
+  <body>
+    <div id="app">
+      <div>
+        <component-test ref="component" title="name">
+          <template #header>在下是头</template>
+        </component-test>
+      </div>
+    </div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      const { h } = Vue;
+      const componentTest = {
+        props: ['title'],
+        created() {
+          console.log('子组件的 parent', this.$parent);
+          console.log('根组件', this.$root);
+          console.log('当前组件接收的 slot', this.$slots);
+          console.log('当前组件接收的 attrs', this.$attrs);
+        },
+        render() {
+          return h(this.$slots.header);
+        },
+        methods: {
+          log() {
+            console.log('你好');
+          }
+        }
+      };
+      const app = Vue.createApp(
+        {
+          props: ['name'],
+          components: {
+            componentTest
+          },
+          data() {
+            return {
+              age: 19
+            };
+          },
+          created() {
+            console.log('来呀', this.$refs.component);
+          }
+        },
+        {
+          name: '我是传入的props'
+        }
+      );
+      const vm = app.mount('#app');
+      // 组件实例正在侦听的数据对象。组件实例代理了对其 data 对象 property 的访问。
+      console.log(vm.$data.age);
+      // 当前组件接收到的 props 对象。组件实例代理了对其 props 对象 property 的访问。
+      console.log(vm.$props.name);
+      // 组件实例正在使用的根 DOM 元素。
+      // 对于使用了片段的组件，$el 是占位 DOM 节点，Vue 使用它来跟踪组件在 DOM 中的位置。
+      console.log(vm.$el);
+      // 当前组件实例的初始化选项。
+      console.log(vm.$options);
+      // 当前组件的父组件（如果有的话）
+      console.log(vm.$parent);
+      // 当前组件的根组件 (如果当前的组件是根组件哪就是组件本身)
+      console.log(vm.$root === vm);
+      // 用来以编程方式访问通过插槽分发的内容。每个具名插槽都有其相应的 property
+      console.log(vm.$slots);
+      // 一个对象，持有注册过 ref attribute 的所有 DOM 元素和组件实例。
+      console.log(vm.$refs);
+    </script>
+  </body>
+</html>
