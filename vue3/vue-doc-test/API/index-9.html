@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>内置组件</title>
+  </head>
+  <body>
+    <style>
+      .fade-enter-active {
+        transition: opacity 0.5s ease;
+        color: green;
+      }
+      .fade-enter-from,
+      .fade-leave-to {
+        opacity: 0;
+        color: blue;
+      }
+      #box{
+        color:red;
+        position: absolute;
+        top: 0;
+        left: 50%;
+      }
+    </style>
+    <div id="root">
+      <!-- 渲染引入组件 -->
+      <component :is="componentName"> </component>
+      <!-- 渲染DOM -->
+      <component :is="'span'">这是一个span</component> <br />
+      <!-- 过渡 transition -->
+      <transition name="fade">
+        <span :key="text">{{ text }}</span>
+      </transition>
+      <!-- list 过渡 -->
+      <transition-group name="list" tag="p">
+        <li v-for="item in items" :key="item" class="list-item">{{ item }}</li>
+      </transition-group>
+      <keep-alive :include="['componentTest1']">
+        <component :is="componentName">
+          <template #header >我是 componentTest3 - header</template>
+        </component>
+      </keep-alive>
+      <select v-model="componentName">
+        <option value="componentTest1">componentTest1</option>
+        <option value="componentTest2">componentTest2</option>
+        <option value="componentTest3">componentTest3</option>
+        <option value="componentTest4">componentTest4</option>
+      </select>
+      <button @click="add()">add</button>
+      <button @click="remove()">remove</button>
+      <input v-model="text" />
+      <teleport to="body">
+        <div id="box">我在body中</div>
+      </teleport>
+    </div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      const componentTest1 = {
+        name: 'componentTest1',
+        data() {
+          return {
+            name: '张飞'
+          };
+        },
+        template: `<div><input v-model="name"></div>`,
+        activated() {
+          console.log(this.name);
+        }
+      };
+      const componentTest2 = {
+        name: 'componentTest2',
+        data() {
+          return {
+            name: '张飞'
+          };
+        },
+        template: `<div><input v-model="name"></div>`,
+        activated() {
+          console.log(this.name);
+        }
+      };
+      const componentTest3 = {
+        template: `<div>
+          123
+          <slot :name="'header'"></slot>
+        </div>`
+      };
+      const componentTest4 = {
+        template: `<div>componentTest4</div>`
+      };
+
+      const app = Vue.createApp({
+        components: {
+          componentTest1,
+          componentTest2,
+          componentTest3,
+          componentTest4
+        },
+        data() {
+          return {
+            text: '',
+            componentName: 'component-test1',
+            items: [1, 2, 3, 4, 5, 6, 7, 8, 9],
+            nextNum: 10
+          };
+        },
+        methods: {
+          randomIndex() {
+            return Math.floor(Math.random() * this.items.length);
+          },
+          add() {
+            this.items.splice(this.randomIndex(), 0, this.nextNum++);
+          },
+          remove() {
+            this.items.splice(this.randomIndex(), 1);
+          }
+        }
+      });
+      app.mount('#root');
+    </script>
+    <style>
+      .list-item {
+        /* display: inline-block; */
+        margin-right: 10px;
+      }
+      .list-enter-active,
+      .list-leave-active {
+        transition: all 1s ease;
+      }
+      .list-enter-from,
+      .list-leave-to {
+        opacity: 0;
+        transform: translateX(30px);
+      }
+    </style>
+  </body>
+</html>

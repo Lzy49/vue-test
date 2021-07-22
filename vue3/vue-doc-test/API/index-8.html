@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>特殊指令</title>
+  </head>
+  <body>
+    <style>
+      .fade-enter-active {
+        transition: opacity 0.5s ease;
+        color: green;
+      }
+      .fade-enter-from,
+      .fade-leave-to {
+        opacity: 0;
+        color: blue;
+      }
+    </style>
+    <div id="root">
+      <!-- key - Vue 的虚拟 DOM 算法的提示 -->
+      <span v-for="item in 5" :key="item">{{item}} </span>
+      <!-- key - 促发过渡 -->
+      <div>
+        <transition name="fade">
+          <span :key="text">{{ text }}</span>
+        </transition>
+        <input v-model="text" />
+      </div>
+      <!-- ref -->
+      <div ref="box">{{text}}</div>
+      <button @click="log">log</button>
+      <!-- is 动态组件 -->
+      <component :is="componentName"></component>
+      <button @click="componentName = 'componentBox'">切换</button>
+    </div>
+
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      const componentTest = {
+        template: `<div>componentTest</div>`
+      };
+      const componentBox = {
+        template: `<div>componentBox</div>`
+      };
+      const app = Vue.createApp({
+        components: {
+          componentTest,
+          componentBox
+        },
+        data() {
+          return {
+            text: '123',
+            componentName:'componentTest'
+          };
+        },
+        methods: {
+          log() {
+            console.log(this.$refs.box.innerHTML);
+          }
+        }
+      });
+      app.mount('#root');
+    </script>
+  </body>
+</html>

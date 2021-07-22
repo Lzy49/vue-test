@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>指令</title>
+  </head>
+  <body>
+    <div id="root">
+      <!-- v-text 插入值 -->
+      <div v-text="text"></div>
+      <!-- v-html 插入HTML -->
+      <div v-html="html"></div>
+      <!-- v-show -->
+      <div v-show="show">v-show</div>
+      <!-- v-if -->
+      <div v-if="show">v-if</div>
+      <!-- v-else -->
+      <div v-else="!show">v-else</div>
+      <!-- v-on -->
+      <button @click="show = !show">展示&隐藏</button>
+      <!-- for -->
+      <ul>
+        <li v-for="item in count">v-for {{item}}</li>
+      </ul>
+      <!-- v-bind -->
+      <div :style="style">green</div>
+      <!-- v-model -->
+      <input v-model="inputValue" />{{inputValue}}
+      <!-- v-solt -->
+      <component-test> 你好 </component-test>
+      <!-- v-pre -->
+      <div v-pre>v-pre ：{{inputValue}}</div>
+      <!-- v-cloak -->
+      <div v-cloak>v-cloak ： {{inputValue}}</div>
+      <!-- v-once -->
+      <div v-once>{{show}}</div>
+    </div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      const { h } = Vue;
+      const componentTest = {
+        setup(props, context) {
+          return () => h('div', {}, context.slots.default());
+        }
+      };
+      const app = Vue.createApp({
+        components: {
+          componentTest
+        },
+        data() {
+          return {
+            text: '你好我是text',
+            html: '<div style="color:red">我是红色的html</div>',
+            show: false,
+            count: 3,
+            style: { color: 'green' },
+            inputValue: '10'
+          };
+        }
+      });
+      app.mount('#root');
+    </script>
+  </body>
+</html>
