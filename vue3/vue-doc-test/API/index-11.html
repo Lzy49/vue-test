@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>响应性API</title>
+  </head>
+  <body>
+    <div id="root">
+      <div><input v-model="value" /> {{value}}</div>
+      <div>{{shallowRefValue.name}}</div>
+    </div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      const {
+        ref,
+        unref,
+        toRef,
+        toRefs,
+        isRef,
+        customRef,
+        reactive,
+        shallowRef,
+        triggerRef
+      } = Vue;
+      const VALUE = '你好 我 只是 一个没用的常量';
+      const app = Vue.createApp({
+        setup() {
+          const store = reactive({
+            name: '刘备',
+            job: '主公'
+          });
+          console.log('------------ ref --------------');
+          /**
+           * ref 可以创建一个 响应值。访问这个值时需要访问值的 value  值。
+           * ref 在 setup return 时， 被 readonly 包裹 时， 被 reactive 引用时 会被解构。可以直接访问到值。但不会影响 ref 修改 value 时的响应
+           */
+          const refValue = ref(10);
+          refValue.value = 11;
+          console.log(refValue.value); // 11
+          console.log('---------- unref -------------');
+          console.log(unref(refValue)); // 11
+          /**
+           * unref 会 返回 传入值的原始值 ，如果传入值是 ref 就返回 该ref的原始值，其他值则返回其本身
+           */
+          console.log(unref(VALUE)); // 你好 我 只是 一个没用的常量
+          console.log('---------- toRef-------------');
+          /**
+           * toRef 是用来 解构的 ，因为 reactive 创建的响应值 被直接解构后会失去响应性，所有就有了toRef。
+           * 使用 toRef 取不存在值时，仍然会返回一个 Ref 这个 Ref 的 value 值是 undefined
+           */
+          const job = toRef(store, 'job');
+          const age = toRef(store, 'age');
+          console.log(age, age.value); // => ObjectRefImpl , undefined
+          console.log(job, job.value); // => ObjectRefImpl , 主公
+          console.log('--------- toRefs -------------');
+          /**
+           * toRefs 也是用来解构的，和 toRef 不同，toRefs 会将所有值解构抛出一个 object 内部值都是 ref
+           */
+          const o = toRefs(store);
+          console.log(o.job.value); // => 主公
+          const { name } = toRefs(store);
+          console.log(name.value); // => 刘备
+          console.log('------------ isRef -----------');
+          /**
+           * isRef 用来判断一个值是不是 Ref 类型
+           */
+          console.log(isRef(o.job)); // => true
+          console.log('---------- customRef ---------');
+          /**
+           * customRef 创建一个自定义 响应值，接收一个函数，
+           * - 该函数接收两个参数 track 和 trigger 。
+           *  - track 表示 追踪值 (添加依赖)
+           *  - trigger 表示 响应值 (促发依赖们)
+           * - 抛出一个带有 get 和 set 的对象
+           */
+          function useDebouncedRef(value, delay = 200) {
+            let timeout;
+            let bb = 10;
+            return customRef((track, trigger) => {
+              return {
+                get() {
+                  track();
+                  return value;
+                },
+                set(newValue) {
+                  clearTimeout(timeout);
+                  timeout = setTimeout(() => {
+                    value = newValue;
+                    bb = newValue + 'value';
+                    trigger();
+                  }, delay);
+                }
+              };
+            });
+          }
+          const value = useDebouncedRef('', 200);
+          console.log('---------- shallowRef --------');
+          /**
+           * shallowRef 创建 一个 只检测value的响应值
+           */
+          const shallowRefValue = shallowRef({
+            name: '张三'
+          });
+          setTimeout(() => {
+            shallowRefValue.value.name = '李四' // 该操作不会让页面更新
+            console.log('---------- shallowRefValue --------');
+            /**
+             * triggerRef 手动更新 shallowRef 创建的变量
+             */
+            triggerRef(shallowRefValue); // 该操作可以手动更新页面
+          }, 1000);
+          return { value, shallowRefValue };
+        }
+      });
+      app.mount('#root');
+    </script>
+  </body>
+</html>
