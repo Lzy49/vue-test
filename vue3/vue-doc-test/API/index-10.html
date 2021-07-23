@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>响应性API</title>
+  </head>
+  <body>
+    <div id="root">
+      <div>{{shallowStore.info.name}} 和 {{store.info.name}}</div>
+    </div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      const {
+        reactive,
+        shallowReactive,
+        ref,
+        readonly,
+        shallowReadonly,
+        isProxy,
+        isReactive,
+        isReadonly,
+        toRaw,
+        markRaw,
+        nextTick
+      } = Vue;
+      const app = Vue.createApp({
+        setup() {
+          const age = ref(19);
+          /**
+           * ref 值 赋给 reactive 时，会自动解构，且不会印象 ref 的响应
+           * 将 ref 的 value 值 赋给 reactive 时，两个毫无关系
+           */
+
+          const store = reactive({
+            name: '张飞',
+            info: {
+              name: '前端'
+            },
+            age,
+            age2: age.value
+          });
+          console.log(store.name); // => 张飞
+          age.value = 10;
+          console.log(store.age === age.value); // => true
+          console.log(store.age2 === age.value); // fale
+          /**
+           * readonly 接收 一个 响应或不响应值 返回一个只读值
+           * - readonly 返回 值 不可被修改，但是在其绑定的 响应值发生改变时，该值也会跟着变化
+           * - 当 readonly 绑定的值中 有 ref 值，ref 值会被解构
+           */
+          console.log(
+            '--------------------- readonly --------------------------'
+          );
+          const readonlyStore = readonly(store);
+          readonlyStore.age = 19; // waning
+          console.log(readonlyStore.age); // 10
+          store.age = 22;
+          console.log(readonlyStore.age); // 20
+          const refStore = {
+            testRef: ref(10)
+          };
+          console.log(refStore.testRef.value); // 10
+          const copyRefStroe = readonly(refStore);
+          console.log(copyRefStroe.testRef); // 10
+          refStore.testRef.value = 20;
+          console.log(copyRefStroe.testRef); // 20
+          console.log(
+            '--------------------- isProxy --------------------------'
+          );
+          /**
+           * isProxy 不是用来检测对象是不是一个 Proxy 的 而是用来检查对象是不是一个 由 reactive 或 readonly 创建的 proxy
+           */
+          const proxyValue = new Proxy({}, {});
+          console.log(isProxy(proxyValue)); // false
+          console.log(isProxy(refStore), isProxy(copyRefStroe)); // false true
+          console.log(isProxy(store), isProxy(copyRefStroe)); // true true
+          console.log('------------------ isReactive  ------------------');
+          /**
+           * isReactive 是用来判断是不是一个由 Reactive 创建的 Proxy
+           * - 不但 由 reactive 创建的 响应对象 会返回 true
+           * - 而且 由 readonly 代理的 reactive 对象 也会返回 true
+           */
+          console.log('isReactive(store)', isReactive(store)); // true
+          console.log('isReactive(readonlyStore)', isReactive(readonlyStore)); // true
+          console.log('isReactive(coyRefStore)', isReactive(copyRefStroe)); // false
+          console.log('------------------ isReadonly ------------------');
+          /**
+           * isReadonly 用来判断 是不是一个 由 Readonly 创建的 Proxy
+           * - 被 Readonly 包裹的 对象都会返回true
+           */
+          console.log('isReadonly', isReadonly(copyRefStroe)); // true
+          console.log('------------------ toRaw ------------------');
+          /**
+           * toRaw 返回 readonly 和 reactive 包裹的原始对象
+           * - 不管包裹几层，都会返回 最原始的对象，对象中的 ref 仍然是响应的ref
+           */
+          console.log(typeof toRaw(readonlyStore) === 'object'); // true
+          console.log(typeof toRaw(store) === 'object'); // true
+          console.log('------------------ markRaw ----------------');
+          /**
+           * markraw 产生一个 值 ，这个值 永远不会变成 Proxy
+           */
+          const markrawValue = markRaw({ name: '张三' });
+          const hasRawStore = reactive({
+            raw: markrawValue,
+            noRaw: { name: '张飞' }
+          });
+          console.log(isReactive(hasRawStore.raw)); // false
+          console.log(isReactive(hasRawStore.noRaw)); // true
+          console.log('----------------- shallowReactive --------------');
+          /**
+           * shallowReactive 创建的 响应变量 只有第一层 会被监控。更内部的 会暴露 原始值
+           */
+          const shallowStore = shallowReactive({
+            name: '张飞',
+            info: {
+              name: '前端'
+            }
+          });
+          const readonlyShallowStore = readonly(shallowStore);
+          setTimeout(async () => {
+            store.info.name = '后端';
+            await nextTick
+            shallowStore.info.name = '后端'; // 因为没有绑定所以，修改后页面值并不刷新
+          }, 100);
+          console.log('------------------ shallowReadonly -----------')
+          /**
+           * 产生一个只读属性，而只读只是一层。内部值修改依然会是原始值
+           */
+          const shallowReadonlyStore = shallowReadonly(store)
+          shallowReadonlyStore.name = '刘备' //waning
+          shallowReadonlyStore.info.name = '北冰洋'
+          console.log(store.info.name) // 北冰洋 
+          return {
+            shallowStore,
+            store
+          };
+        }
+      });
+      app.mount('#root');
+    </script>
+  </body>
+</html>

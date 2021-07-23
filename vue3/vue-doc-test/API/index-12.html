@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Computed & watch</title>
+  </head>
+  <body>
+    <div id="root">
+      <p>
+        value:{{value}} -> computedValue {{computedValue}}
+        <button @click="value ++">+</button>
+      </p>
+      <p>
+        value:{{value}} -> computedVaule2 {{computedValue2}}
+        <button @click="computedValue2 ++ ">computedValue2 ++</button>
+      </p>
+    </div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      const { ref, computed, watchEffect, watch } = Vue;
+      const app = Vue.createApp({
+        setup() {
+          const value = ref(10);
+          console.log('---------- computed ----------------');
+          /**
+           * computed 产生一个 响应值，接收一个函数或者 一个还有 get,set 的对象
+           * - 当接收一个函数时，表示该函数是 get 。当 返回值依赖的响应值发生变化时，计算属性也会跟随变化
+           * - 当接收一个对象时，表示 get 和 set 。当 set时可以接收一个值，可以将值进行处理。
+           */
+          const computedValue = computed(() => value.value + 10);
+          const computedValue2 = computed({
+            get() {
+              return value.value + 10;
+            },
+            set: (newValue) =>
+              typeof newValue === 'number' && (value.value = newValue - 10)
+          });
+          console.log('----------- watchEffact --------------');
+          /**
+           * watchEffact 接收一个函数，表示创建一个监听作用域。该作用域中的热任何响应值发生改变后，都会执行该作用函数。更新所有值
+           */
+          watchEffect(() => {
+            value.value;
+            console.log('当 value.value 改变时 我会执行，虽然没什么副作用');
+            // const watchResult
+          });
+          console.log('----------- watch ---------------');
+          /**
+           * watch 函数 和 watcEffact 都是用来检测响应值变化，执行某函数的。但是他俩差别很大。
+           * 1 watch 是检测某个 或 某些 指定响应值而执行，而 watchEffact 只要在该作用域用的响应值发生改变就会执行
+           * 2 watch 有很多配置项，
+           *  - deep 表示深度检测
+           *  - immediate 表示初始化时执行一次
+           *  - flush 更新时机
+           * watch 接收3个参数
+           * 1. 监听值 （如果是引用类型需要一个函数抛出该值，多个值使用 数组 接收）
+           * 2. 执行函数
+           * 3. option 
+           *  - deep
+           *  - immediate
+           *  - flush
+           */
+          watch(value, function () {
+            console.log('当 value 改变后 我会被执行哦');
+          });
+          return {
+            value,
+            computedValue,
+            computedValue2
+          };
+        }
+      });
+      app.mount('#root');
+    </script>
+  </body>
+</html>
