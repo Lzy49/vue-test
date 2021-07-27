@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div id="root">
+      <div>
+        通过 createApp 传递过来一个参数 {{propsName}}
+        <component-text></component-text>
+        <aaa></aaa>
+        <component-test-async></component-test-async>
+        <input v-focus />
+      </div>
+    </div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      const { defineAsyncComponent, reactive, readonly } = Vue;
+      const componentText = {
+        inject: ['userInfo', 'setUserInfo'],
+        template: `<div>  我 叫 {{userInfo.name}} 我今年 {{userInfo.age}} <input @change="setUserInfo({age:$event.target.value})" /></div>`
+      };
+      // 1. 创建一个 Vue 应用
+      const app = Vue.createApp(
+        {
+          // 参数 1 一个 根组件
+          name: 'root-component',
+          props: {
+            propsName: String
+          }
+        },
+        {
+          // 参数 2 一个 props
+          propsName: 'propsName'
+        }
+      );
+
+      // 2. Vue config 的一些配置
+      /*
+         2.1 关于错误处理的一些
+         - errorHandler 捕捉错误
+         - warnHandler 捕捉警告
+       */
+      app.config.errorHandler = (err, vm, info) => {
+        console.log(err)
+      };
+      app.config.warnHandler = (err, vm, info) => {
+        console.log(err)
+      };
+      /*
+         2.2 全局 变量，函数
+         - globalProperties
+       */
+      app.config.globalProperties.$http = (url = '', param) => {
+        console.log(`给${url}发送请求,参数是${JSON.stringify(param)}`);
+      };
+
+      /*
+         2.3 其他配置
+         - optionMergeStrategies mixin 自定义 选项合并策略
+         - performance 开启开发工具
+         - compilerOptions.isCustomElement 判断 非 DOM，注册组件以外的 节点 以外的节点是不是 自定义节点
+         - compilerOptions.whitespace 多余空格的处理方式  'condense' | 'preserve'
+         - compilerOptions.delimiters 修改 html 中 变量 风格
+         - compilerOptions.comments 移除注释
+       */
+      app.config.optionMergeStrategies.hello = (componentProps, mixinProps) => {
+        return `我是 ${mixinProps}`;
+      };
+      app.config.performance = true; // 开启调试工具调试
+      app.config.compilerOptions.isCustomElement = (tag) => false; // 所有非组件，非DOM的 标签报错
+      app.config.compilerOptions.whitespace = 'condense';
+      app.config.compilerOptions.delimiters = ['{{', '}}'];
+      app.config.compilerOptions.comments = false;
+      // 3. mixin 混合 组件
+      app.mixin({
+        name: 'mixin',
+        hello: 'mixin',
+        created() {
+          console.log('我是mixin 我会在 component 之前运行哦');
+        }
+      });
+      // 4. component 引入 全局组件
+      // 4.1 引入同步组件
+      app.component('component-text', componentText);
+      // 4.2 引入异步组件
+      app.component(
+        'component-test-async',
+        defineAsyncComponent(
+          () =>
+            new Promise((resolve, reject) => {
+              setTimeout(() => {
+                resolve(componentText);
+              }, 3000);
+            })
+        )
+      );
+      // 5. 全局指令
+      app.directive('focus', (el) => {
+        el.focus();
+      });
+      const userInfo = reactive({
+        name: '张飞',
+        age: 19
+      });
+      // 6. 全局 store
+      app.provide('userInfo', readonly(userInfo));
+      app.provide('setUserInfo', (info) => {
+        userInfo.name = info.name ?? userInfo.name;
+        userInfo.age = info.age ?? userInfo.age;
+      });
+      // 7. 引入插件
+      app.use(
+        function (app, option) {
+          // 8. 版本号
+          console.log('当前vue版本', app.version);
+          console.log('传入其他参数', option);
+        },
+        {
+          isNew: false
+        }
+      );
+      // 9. 将应用挂载到 DOM 上
+      const vm = app.mount('#root');
+      console.log(vm.$options.hello);
+
+      // 10. 卸载 组件
+      // setTimeout(()=>{
+      //   app.unmount()
+      // },1000)
+    </script>
+  </body>
+</html>
