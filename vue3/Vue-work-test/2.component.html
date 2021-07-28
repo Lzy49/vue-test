@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>component</title>
+  </head>
+  <body>
+    <div id="root">
+      <div>
+        <input placeholder="要修改的名字" v-model="name" />
+        你好{{ name }}今年{{ age }}是一个{{ job }}。他的妈妈今年
+        {{ momAge }} 岁<button @click="sayHi">Say Hi</button>
+        <child-component @set-name="setName"></child-component>
+        <div>
+          <h2>store:</h2>
+          {{ store }}
+        </div>
+      </div>
+    </div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      const { h, defineAsyncComponent, withDirectives, resolveDirective } = Vue;
+      /*
+        关于 组件的一些复习
+      */
+      const mixinComponent = {
+        created() {
+          console.log('我是 mixin');
+        }
+      };
+      const extendsComponent = {
+        created() {
+          console.log('我是 extends');
+        }
+      };
+      const rootComponent = {
+        /*
+            1.1 data 函数 抛出所有响应值 该函数必须是一个 函数 并抛除一个对象，对象中的所有值都是 响应值
+            - 如果函数是一个箭头函数，则会接收一个参数 vm 该参数是 this
+            - 如果函数是一个function 不会接收任何值，this == Vue 实例
+          */
+        data() {
+          return {
+            name: 'rootComponent',
+            store: {
+              name: ' 我是 store '
+            }
+          };
+        },
+        /*
+            1.2 props 接收 一个 对象 或 数组 ，接收的值是父组件传入参数。
+            - 当 props 是 数组时，则每个值就是 父组件传入的参数的key
+            - 当 props 是 对象时，贼每个值的 key 是 父组件传入的参数的key。对应的值可以是一个options 对象，或一个 Class
+              - 如果是 Class 表示 验证传入值是否是 该 Class 的实例
+              - 如果是 option 对象时，可以接收多个内容
+                - type 接收 一个 Class， 验证传入值是否时 该 Class 的实例
+                - default 没有接收到值时的默认值
+                - required 是否必填接收一个 Boolean 默认 false
+                - validator 自定义校验函数 返回一个 Boolean 值 接收 一个参数
+                  - 传入值
+          */
+        props: {
+          age: Number,
+          job: {
+            type: String,
+            default: '医生',
+            validator: (value) => ['医生', '老师'].includes(value)
+          }
+        },
+        /*
+            1.3 计算属性 computed
+            - computed 接收一个 对象，没一个 值 都会创建为一个响应值。该值接收两种内容
+              - 接收一个 函数，该函数 必须 返回 一个 值，该值可以依赖 其他 响应值，当这些响应值发生改变时。这个值也会进行变化
+              - 接收一个 对象，该对象有两个值
+                - get: 和 只接收一个函数时相同 。
+                - set: 该值接收一个函数，函数接收一个值。可以在函数中对 该响应值的依赖进行修改。
+            - 计算属性 和 直接调用一个函数差不多。但是 计算属性 有缓存机制。如果多处调用，可以降低性能消耗。
+          */
+        computed: {
+          momAge() {
+            return this.age + 23;
+          }
+        },
+        /*
+          1.4  methods 方法集
+            - 该集合 接收 一个对象，对象中的每一个值都是一个函数，这些函数会绑定到 this 实例上。可以在模版中调用。
+            - methods 中的函数 在未传值时接收一个 event 值，与 javascript 的事件 event 相同
+         */
+        methods: {
+          sayHi(event) {
+            console.log(event.target);
+            console.log('hi');
+          },
+          setName(name) {
+            this.name = name;
+          }
+        },
+        /*
+          1.5 watch  观察属性
+          - watch 接收 一个对象，对象中的每一个 值 的 key 是一个值，当该值发生变化时，执行对应的 handler 函数。
+          - watch 的每个值 可以是一个 函数 或者 一个对象
+            - 当值是函数时，表示 当 Key 发生变化时， 执行该函数
+            - 当值是一个对象时，可以接收多个参数：
+              - handler : function  表示 当 Key 发生改变后 执行该函数，该函数接收一个值 检测值
+              - immediate : 表示 在 key 初始化后 执行一次 handler 函数
+              - deep : 表示深度检测 key 指向 的值
+              - flush: 表示更新时机
+                - pre  当 watch 值 之前更新
+                - post 当 watch 值 之后更新
+                - sync 与 watch 值 同步更新
+         */
+        watch: {
+          name: {
+            handler(value) {
+              console.log('我会初始化一次', value);
+            },
+            immediate: true
+          }
+        },
+        /*
+          5.3.1
+          - provide 接收一个函数，该函数抛出一个对象，该对象中的值都可以被子组件or孙组件 inject 引入
+        */
+        provide() {
+          return {
+            store: this.store,
+            addStore(key, value) {
+              this.store[key] = value;
+            }
+          };
+        }
+      };
+
+      const childComponent = {
+        /*
+          1.6 emits 接收一个数组或对象。
+          - 当接收一个数组时，每一个值都是一个 父组件传递来的自定义方法
+          - 当接收一个对象时，每一个值的key 是一个父组件传递来的自定义方法。值的 value 是一个函数，该函数的作用是校验 调用时传入参数是否合法。
+            该函数会在 通过 emit 调用 指定的自定义方法之前执行 接收 emit 的第二个参数，并必须返回一个 Boolean 值。如果 Boolean 为 false 则 会报错
+        */
+        emits: {
+          setName(...ages) {
+            console.log(ages);
+            return true;
+          }
+        },
+        /*
+          2.1  template 接收一个字符串，这个字符串是一端 HTML Vue 指令的字符
+        */
+        template: `
+          <div>
+            <input @change="$emit('setName',$event.target.value)">
+            <grandson-component></grandson-component>
+          </div>
+        `,
+        /*
+          4.2 components
+          - 声明组件实例中可用组件的哈希表。
+        */
+        components: {
+          'grandson-component': defineAsyncComponent(() =>
+            Promise.resolve(grandsonComponent)
+          )
+        }
+      };
+      const grandsonComponent = {
+        /*
+          2.2 render 接收一个函数，该函数必须返回一个 VDOM 或者 JSX
+        */
+        data() {
+          return {
+            name: 'grandsonComponent'
+          };
+        },
+        render() {
+          const focus = resolveDirective('focus');
+          return h('div', { color: 'red' }, [
+            h(
+              'button',
+              {
+                onclick: () => {
+                  this.name = '张飞';
+                }
+              },
+              '你好我是 ' + this.name
+            ),
+            withDirectives(
+              h('input', {
+                onchange: (event) => {
+                  this.addStore(
+                    'childValue' + Object.keys(this.store).length,
+                    event.target.value
+                  );
+                }
+              }),
+              [[focus]]
+            )
+          ]);
+        },
+        /*
+          3.1 基础生命周期
+          - beforeCreate // 实例初始化之前调用
+          - created // 实例初始化后
+          - beforeMount // render 函数首次调用 之前
+          - mounted // render 函数首次调用 之后
+          - beforUpdate // 更新DOM前
+          - updated // 更新DOM后
+          - beforeUnmount // 卸载以前
+          - unmounted // 卸载后
+        */
+        beforeCreate() {
+          console.log('beforeCreate');
+        },
+        created() {
+          console.log('created');
+        },
+        beforeMount() {
+          console.log('beforeMount');
+        },
+        mounted() {
+          console.log('mounted');
+        },
+        beforeUpdate() {
+          console.log('beforeUpdate');
+        },
+        updated() {
+          console.log('updated');
+        },
+        beforeUnmount() {
+          console.log('beforeUnmount');
+        },
+        unmounted() {
+          console.log('unmounted');
+        },
+        /*
+          3.2 keep-alive 相关的生命周期
+          - activated  keep-alive 缓存的组件激活时调用
+          - deactivated 被 keep-alive 缓存的组件停用时调用。
+        */
+        activated() {
+          console.log('activated');
+        },
+        deactivated() {
+          console.log('deactivated');
+        },
+        /*
+          3.3 调试使用的 生命周期
+          - errorCaptured 当捕获一个来自子孙组件的错误时被调用。
+            - 接收 3 个 参数
+              - 错误对象、
+              - 发生错误的组件实例
+              - 包含错误来源信息的字符串
+            - 此钩子可以返回 false 以阻止该错误继续向上传播。
+          - renderTracked 跟踪虚拟 DOM 重新渲染时调用。钩子接收 debugger event 作为参数。此事件告诉你哪个操作跟踪了组件以及该操作的目标对象和键。
+          - renderTriggered 当虚拟 DOM 重新渲染被触发时调用。和 renderTracked 类似，接收 debugger event 作为参数。此事件告诉你是什么操作触发了重新渲染，以及该操作的目标对象和键。
+        */
+        errorCaptured(err, instance, info) {
+          console.log(err, instance, info);
+          return false;
+        },
+        renderTracked(event) {
+          console.log('renderTracked', event);
+        },
+        renderTriggered(event) {
+          console.log('renderTriggered', event);
+        },
+        /*
+          4.1 directives
+          - 局部指令 只能在当前 组件使用，子组件和父组件都不可以
+        */
+        directives: {
+          focus: (el) => {
+            el.focus();
+          }
+        },
+        /*
+          5.1 mixin
+          - mixin 接收一个数组，混入 多个组件
+        */
+        mixins: [mixinComponent],
+        /*
+          5.2 extends
+          - extends 接收一个对象或者一个构造函数，用来扩展 组件
+        */
+        extends: extendsComponent,
+        /*
+          5.3.2 inject
+          - inject 接收 provide 提供的值
+        */
+        inject: ['store', 'addStore'],
+        /*
+          6.1 name
+          - 组件 名称 ，与 keep-alive 相关， keep-alive
+          - 可以自己调用自己
+        */
+        name: 'grandsonComponent',
+        /*
+          6.2 表示 是否 接收 propes 以外的 attrs 写到 root DOM 上 默认 true
+        */
+        inheritAttrs: true,
+        /*
+          6.3 compilerOptions 接收 一个 Array 修改 html 中的 vue 模版
+        */
+        compilerOptions: ['{{', '}}']
+      };
+      const app = Vue.createApp(rootComponent, {
+        age: 19,
+        job: '程序猿'
+      });
+      app.component('child-component', childComponent);
+
+      app.mount('#root');
+      setTimeout(() => {
+        // app.unmount();
+      }, 1000);
+    </script>
+  </body>
+</html>
