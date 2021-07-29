@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>vm-property</title>
+  </head>
+  <body>
+    <div id="root">
+      <child-component v-bind="user" @setName="setName" @log="log">
+        <template #head> head </template>
+        <template v-slot:footer>footer </template>
+      </child-component>
+    </div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      const { h, createApp, ref } = Vue;
+      const childComponent = {
+        props: { userName: String },
+        emits: ['log'],
+        setup() {
+          const age = ref(10);
+          return { age };
+        },
+        data() {
+          return {
+            name: '张飞',
+            isWatch: true,
+            divValue:'你好我没被刷新'
+          };
+        },
+        mounted() {
+          /*
+            1. vm 的 property
+            1.1 $data 
+             - 获取定义在 component 中的 data 返回值 
+             - setup 返回值不会在该 property 中展示
+          */
+          console.log('-----------------------------')
+          console.log(this.$data);
+          console.log(this.$data.age === undefined); // true
+          /*
+            1.2 $props
+            - 获取 通过 props 选项 获取的值
+          */
+          console.log('-----------------------------')
+          console.log(this.$props); // 只有 userName
+          /*
+            1.3 $el
+            - 当前组件的根组件
+          */
+          console.log('-----------------------------')
+          console.log(this.$el);
+          /*
+            1.4 $options 
+            - 所有选项集合 包括自定义的 property
+          */
+          console.log('-----------------------------')
+          console.log(this.$options);
+          /*
+            1.5 $parent 
+            - 父组件实例
+          */
+          console.log('-----------------------------')
+          this.$parent.log();
+          /*
+            1.6 $root
+            - 祖根组件实例
+          */
+          console.log('-----------------------------')
+          this.$root.log();
+          /*
+            1.7 $slots
+            - 所有  slot
+          */
+          console.log('-----------------------------')
+          console.log(this.$slots);
+          /*
+            1.8 $refs
+            - 只会收集映射 DOM的 ref setup 返回的 ref 会被分类
+          */
+          console.log('-----------------------------')
+          console.log(this.$refs);
+          /*
+            1.9 $attrs
+            - 没有被 props , emits 接收的 值 
+          */
+          console.log('-----------------------------')
+          console.log(this.$attrs);
+          /*
+          2.1  $watch 
+          - 监听 某值改变执行某方法
+          - 接收3个参数
+            - 被监听值 string|function 当多个值可以使用 function 返回一个数组
+            - 执行函数 function
+            - 其他配置 object
+              - deep
+              - immediate
+              - flush
+          - 返回一个取消方法 unwatch 
+         */
+         console.log('-----------------------------')
+          const unwatch = this.$watch(
+            () => {
+              return [this.age, this.isWatch];
+            },
+            function () {
+              console.log('当前的age' + this.age);
+            },
+            {
+              immediate: true
+            }
+          );
+          const inter = setInterval(() => {
+            this.age < 14 ? this.age++ : clearInterval(inter);
+          }, 100);
+
+          /*
+            2.2 $emit
+            - 用来调用 父组件传递来的 自定义事件
+          */
+          console.log('-----------------------------')
+          this.$emit('log', '我是通过 $emit 调用的');
+          /*
+            2.3 $forceUpdate
+            - 强制组件刷新DOM
+          */
+          console.log('-----------------------------')
+          setTimeout(() => {
+            console.log('强制刷新');
+            this.$forceUpdate();
+          }, 1000);
+          /*
+            2.4 $nextTick
+            - 接收一个参数 function 刷新DOM后执行的内容
+            - 刷新DOM后执行
+          */
+          console.log('-----------------------------')
+          this.divValue = '你好我被刷新了'
+          console.log(this.$refs.div.innerHTML);
+          this.$nextTick(() => {
+            console.log(this.$refs.div.innerHTML);
+          });
+          console.log('-----------------------------')
+        },
+        render() {
+          console.log('render 我被刷新了');
+          return h('div', {}, [
+            this.$slots.head(),
+            this.$slots.footer(),
+            h(
+              'div',
+              {
+                ref: 'div'
+              },
+              this.divValue
+            ),
+            h(
+              'button',
+              {
+                onclick: () => {
+                  this.isWatch = !this.isWatch;
+                }
+              },
+              '修改 isWatch'
+            )
+          ]);
+        }
+      };
+      const app = createApp({
+        data() {
+          return {
+            user: {
+              userName: '老金',
+              userAge: '60+'
+            }
+          };
+        },
+        methods: {
+          log(e) {
+            if (e) {
+              console.log(e);
+            } else {
+              console.log('你好 我是 root');
+            }
+          },
+          setName(name) {
+            this.user.userName = name;
+          }
+        },
+        components: {
+          childComponent
+        }
+      });
+      app.mount('#root');
+    </script>
+  </body>
+</html>

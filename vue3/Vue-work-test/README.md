@@ -215,3 +215,41 @@
 #### compilerOptions
 
 - 接收 一个 Array 修改 html 中的 vue 模版
+## 3.wm-property
+### property
+#### $data 
+- 获取定义在 component 中的 data 返回值 
+- setup 返回值不会在该 property 中展示
+#### $props
+- 获取 通过 props 选项 获取的值
+#### $options
+- 所有选项集合 包括自定义的 property
+#### $el
+- 当前组件的根组件
+#### $parent 
+- 父组件实例
+#### $root
+- 祖根组件实例
+#### $slots
+- 所有  slot
+#### $refs
+- 只会收集映射 DOM的 ref setup 返回的 ref 会被分类
+#### $attrs
+- 没有被 props , emits 接收的 值 
+### 方法
+#### $watch 
+- 监听 某值改变执行某方法
+- 接收3个参数
+  - 被监听值 string|function 当多个值可以使用 function 返回一个数组
+  - 执行函数 function
+  - 其他配置 object
+    - deep
+    - immediate
+    - flush
+- 返回一个取消方法 unwatch 
+#### $emit
+- 用来调用 父组件传递来的 自定义事件
+#### $forceUpdate
+- 强制组件刷新DOM
+#### $nextTick
+- 接收一个参数 function 刷新DOM后执行的内容
