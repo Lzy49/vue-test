@@ -1,12 +1,566 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title></title>
-</head>
-<body>
-  
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title></title>
+  </head>
+  <body>
+    <h1>目录</h1>
+    <ul>
+      <pre>
+1 创建组件 
+- 1.1 同步组件 
+- 1.2 异步组件 
+2 使用组件 
+- 2.1 render & setup 引入组件 
+- 2.1 template 中引入 
+3 子组件钩子使用 
+- 3.1 template 中使用 
+- 3.2 render & setup 中使用 
+4 父组件传入 
+- 4.1 render & setup 中使用 
+- 4.2 template 中使用 
+5 子组件接收参数和方法 
+6 父组件传递参数和方法
+7 子组件接收v-model参数和值
+8 父组件传递v-model参数和值
+    </pre
+      >
+    </ul>
+    <div id="root">
+      <use-component-1></use-component-1>
+      <use-component-2></use-component-2>
+    </div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      const {
+        createApp,
+        defineComponent,
+        defineAsyncComponent,
+        resolveComponent,
+        resolveDynamicComponent,
+        h,
+        reactive
+      } = Vue;
+      /*
+         1. 创建组件
+         1.1 创建同步组件
+         - defineComponent
+           - 接收一个 组件对象，并返回一个组件对象。
+             - 区别在于使用 defineComponent 创建的组件 类型有所改变 用于手动渲染函数、TSX 和 IDE 工具支持。
+           - 接收一个 function  并返回一个组件对象，该函数和 setup 相同
+         1.1.1 接收一个对象
+       */
+      const component1 = defineComponent({
+        /*
+          5 在子组件使用父组件传递的参数 和 自定义函数
+          - 自定义参数必须在 props 选项中接收才可以正常使用
+          - 自定义函数必须在 emits 选项中接收才可以使用
+        */
+        props: {
+          testStore: {
+            type: Object,
+            default: () => ({
+              name: 'component1',
+              age: 0
+            }),
+            request: true,
+            validator: (value) => {
+              return true;
+            }
+          },
+          modelValue: String
+        },
+        emits: ['setTestStore', 'update:modelValue'],
+        data() {
+          return {
+            info: {
+              name: 'component1',
+              age: 19
+            }
+          };
+        },
+        methods: {
+          set($event) {
+            console.log(this.$attrs);
+            console.log($event.target.value);
+            this.$emit('setTestStore', { name: $event.target.value });
+          }
+        },
+        /*
+           3 子组件中插槽的使用
+           3.1 在 template 中使用插槽
+           - 直接 使用 <slot> 标签在 代码中引用，接收多个参数
+             - name 表示 slot 的名称 与 v-slot 的 `:` 后值对应
+             - 其他自定义值表示传入参数与 v-slot的 = 后值对应
+         */
+        /*
+          5.1 在 template 模版中使用自定义事件和自定义参数时，
+          - 参数像data一样可以正常使用
+          - 事件则需要使用 $emit 来调用 该函数接收两个值 函数名，参数集合
+          - 没有被接收的的内容会在 实例 的`$attrs` 中显示
+        */
+        /*
+          7.1 在 template 模版中使用 v-mobel 值
+          - 想调用其他值相同，在模版改变的函数中 调用update:xxx，在显示的位置使用 xxx
+          
+          
+        */
+        mounted() {
+          console.log('没有被接收的内容', this.$attrs);
+        },
+        template: `
+          <div>
+            <slot name="header" v-bind="info">
+              我的父组件没有传递内容过来
+            </slot>
+            父组件传递了参数过来：name: {{testStore.name}} ,age: {{testStore.age}}
+            <input @change="set($event)">
+            <div>
+              modelValue = <input :value="modelValue" @change="$emit('update:modelValue',$event.target.value)">
+            </div>
+          </div>
+        `
+      });
+      /*
+         1.1.2 创建同步组件时接收一个 函数
+       */
+      const component2 = defineComponent(function (props, context) {
+        /*
+           3.2 在 render & setup 中使用 slot
+           - 在 render 和 setup 中需要使用 slots (render 使用 this.$slots，setup 使用context.slots)
+           - slots 的 每个key对应的是 父组件 v-slot `:` 后的值
+           - slots 的 每个value 都是一个 方法 ，该方法接收一个值，该值对应 v-slot `=` 的的值
+         */
+        const store = reactive({
+          name: 'component2',
+          age: 19
+        });
+        if (context.slots.header) {
+          return () => {
+            return h('div', {}, [context.slots.header(store)]);
+          };
+        } else {
+          return () => {
+            return h('div', {}, 'component2');
+          };
+        }
+      });
+      /*
+         1.2 创建异步组件
+         - defineAsyncComponent
+           - 接收一个 Promise 成功值为 组件
+           - 接收一个 对象 ：
+             - loader : function 抛出一个 Promise 成功值为组件
+             - loadingComponent : Object 加载中显示的组件
+             - errorComponent : Object 加载失败显示的组件
+             - delay: Number  在显示 loadingComponent 组件之前延迟多少 ms
+             - timeout: Number 并且加载组件的时间超过了设定值，将显示错误组件 默认 Infinity (ms)
+             - suspensible: 组件是否可挂起
+             - onError 当加载失败后的一个处理函数接收：
+               - error 错误信息对象
+               - retry 一个函数，用于指示当 promise 加载器 reject 时，加载器是否应该重试
+               - fail  一个函数，指示加载程序结束退出
+               - attempts 允许的最大重试次数
+       */
+      /*
+       1.2.1 接收一个 工厂函数
+      */
+      const asyncComponent1 = defineAsyncComponent(
+        () =>
+          new Promise((resolve, reject) => {
+            setTimeout(() => {
+              resolve({
+                props: {
+                  testStore: {
+                    type: Object,
+                    default: () => ({
+                      name: 'component1',
+                      age: 0
+                    }),
+                    request: true,
+                    validator: (value) => {
+                      return true;
+                    }
+                  },
+                  modelValue: String
+                },
+                emits: ['setTestStore', 'update:modelValue'],
+                /*
+                  5.2 在 render & setup 函数中使用 传入值
+                  - 父组件中传入的 props 在 setup 的 props 中显示 ，在 render 函数的 wm 实例上解构
+                  - 没有被 props 和 emits 接收的参数都会在 context 的 attrs 中显示
+                */
+               /*
+                  7.2 在 render & setup 函数中使用 v-model
+                  - 想调用其他值相同，在模版改变的函数中 调用`update:xxx`，在显示的位置使用 xxx
+                */
+                setup(props, context) {
+                  console.log('setup 没有被接收的内容', context.attrs);
+                  return () => {
+                    return h(
+                      'div',
+                      {},
+                      h('div', null, '异步组件：asyncComponent1'),
+                      h('div', {}, [
+                        `父组件传递了参数过来：name: ${props.testStore.name} ,age: ${props.testStore.age}`,
+                        h('input', {
+                          onChange: (event) => {
+                            context.emit('setTestStore', {
+                              name: event.target.value
+                            });
+                          }
+                        })
+                      ]),
+                      h('div', {}, [
+                        'v-model:',
+                        h('input', {
+                          onChange: ({ target }) => {
+                            context.emit('update:modelValue', target.value);
+                          },
+                          value: props.modelValue
+                        })
+                      ])
+                    );
+                  };
+                }
+              });
+            }, 500);
+          })
+      );
+      /*
+         1.2.2 接收一个 option 对象
+       */
+      const asyncComponent2 = defineAsyncComponent({
+        // 工厂函数
+        loader: () =>
+          new Promise((resolve) => {
+            setTimeout(() => {
+              resolve({
+                template: `<div>异步组件 前来报道</div>`
+              });
+            }, 1000);
+          }),
+        // 加载异步组件时要使用的组件
+        loadingComponent: {
+          template: `<div>加载中</div>`
+        },
+        // 加载失败时要使用的组件
+        errorComponent: {
+          template: `<div>您的组件凉凉了</div>`
+        },
+        // 在显示 loadingComponent 之前的延迟 | 默认值：200（单位 ms）
+        delay: 200,
+        // 如果提供了 timeout ，并且加载组件的时间超过了设定值，将显示错误组件
+        // 默认值：Infinity（即永不超时，单位 ms）
+        timeout: 3000,
+        // 定义组件是否可挂起 | 默认值：true
+        suspensible: false,
+        /**
+         *
+         * @param {*} error 错误信息对象
+         * @param {*} retry 一个函数，用于指示当 promise 加载器 reject 时，加载器是否应该重试
+         * @param {*} fail  一个函数，指示加载程序结束退出
+         * @param {*} attempts 允许的最大重试次数
+         */
+        onError(error, retry, fail, attempts) {
+          if (error.message.match(/fetch/) && attempts <= 3) {
+            // 请求发生错误时重试，最多可尝试 3 次
+            retry();
+          } else {
+            // 注意，retry/fail 就像 promise 的 resolve/reject 一样：
+            // 必须调用其中一个才能继续错误处理。
+            fail();
+          }
+        }
+      });
+      /*
+         2. 使用组件
+         2.1 在 render & setup 函数中使用组件
+       */
+      const useComponent1 = defineComponent({
+        components: {
+          'component-1': component1,
+          asyncComponent1,
+          asyncComponent2
+        },
+        data() {
+          return {
+            testStore: {
+              name: 'useComponent1',
+              age: 19
+            },
+            modelValue: ''
+          };
+        },
+        methods: {
+          setTestStore(value) {
+            console.log('我被执行了', value);
+            this.testStore = value;
+          }
+        },
+        render() {
+          return h('div', [
+            h(
+              'div',
+              {
+                className: ['box']
+              },
+              [
+                /*
+                   2.1.1 直接引入组件，然后将组件渲染到h函数中
+                 */
+                h('h2', {}, '直接引入组件本身'),
+                /*
+                   4 在父组件中使用 slot 钩子
+                   4.1 在 render 函数中使用 钩子 时直接传入一个函数
+                     - key 和 子组件的 <slot> name 对应
+                     - 函数接收参数是一个对象 和 子组件传入的所有 自定义 attr 对应
+                     - return 一个 VDOM 对象，可以是一个 VDOM 或者 VDOM 数组
+                 */
+                /*
+                   6 传递自定义属性和自定义方法
+                   6.1 在 render 函数中传递 
+                   - 传递自定义 props 时 直接在h的第二函数中设置即可
+                   - 传递自定义 函数时 时 需要在函数前添加 on 并使用驼峰写法 onXxxxx来拼接，最后如果有修饰符也可以使用驼峰拼接
+                */
+                h('div', {}, this.modelValue),
+                h(
+                  component1,
+                  {
+                    testStore: this.testStore,
+                    onSetTestStore: this.setTestStore,
+                    attrValue: '没有被接收的内容',
+                    /*
+                      8.1 render 函数中 给 组件 使用 v-model 传递值 时，可以将其语法糖拆解为 xxx值，和 onUpdate:xxx 函数
+                    */
+                    modelValue: this.modelValue,
+                    'onUpdate:modelValue': (v) => {
+                      this.modelValue = v;
+                    }
+                  },
+                  {
+                    header: (props) => {
+                      return h(
+                        'div',
+                        {
+                          class: 'slotBox'
+                        },
+                        [
+                          h('p', {}, `我接收的name: ${props.name}`),
+                          h('p', {}, `我接收的age:  ${props.age}`)
+                        ]
+                      );
+                    }
+                  }
+                ),
+                h(
+                  component2,
+                  {},
+                  {
+                    header: (props) => {
+                      return h(
+                        'div',
+                        {
+                          class: 'slotBox'
+                        },
+                        [
+                          h('p', {}, `我接收的name: ${props.name}`),
+                          h('p', {}, `我接收的age:  ${props.age}`)
+                        ]
+                      );
+                    }
+                  }
+                ),
+                h(asyncComponent1, {
+                  testStore: this.testStore,
+                  onSetTestStore: this.setTestStore,
+                  attrValue: '没有被接收的内容',
+                  /*
+                    8.1 render 函数中 给 组件 使用 v-model 传递值 时，可以将其语法糖拆解为 xxx值，和 onUpdate:xxx 函数
+                  */
+                  modelValue: this.modelValue,
+                  'onUpdate:modelValue': (v) => {
+                    this.modelValue = v;
+                  }
+                }),
+                h(asyncComponent2)
+              ]
+            ),
+            h(
+              'div',
+              {
+                className: ['box']
+              },
+              [
+                /*
+                   2.1.2 使用组件名调用（全局，组件内都可以）
+                   - 使用 resolveComponent
+                   - 使用 resolveDynamicComponent
+                   - 两者区别是 resolveDynamicComponent 使用的 模版中 component 组件的机制。
+                 */
+                h('h2', {}, '使用 resolveComponent 函数'),
+                h(resolveComponent('component-1')),
+                h(resolveComponent('component-2')),
+                h(resolveComponent('asyncComponent1')),
+                h(resolveComponent('asyncComponent2'))
+              ]
+            ),
+            h('div', { className: ['box'] }, [
+              /*
+                 2.1.2 使用
+                 - 使用 resolveDynamicComponent
+               */
+              h('h2', {}, '使用 resolveDynamicComponent'),
+              h(resolveDynamicComponent('component-1')),
+              h(resolveDynamicComponent('component-2')),
+              h(resolveDynamicComponent('asyncComponent1')),
+              h(resolveDynamicComponent('asyncComponent2'))
+            ])
+          ]);
+        }
+      });
+      /*
+         2.2 在 template 中使用
+         - 在 template 中使用必须 将组件引入到 components 中或全局 component 引入 才可以正常使用。
+       */
+      const useComponent2 = defineComponent({
+        components: {
+          component1,
+          component2,
+          asyncComponent1,
+          asyncComponent2
+        },
+        data() {
+          return {
+            componentNames: [
+              'component1',
+              'component2',
+              'asyncComponent1',
+              'asyncComponent2'
+            ],
+            componentName: 'asyncComponent2',
+            testStore: {
+              name: 'useComponent1',
+              age: 19
+            },
+            modelValue:''
+          };
+        },
+        methods: {
+          setTestStore(value) {
+            console.log('我被执行了', value);
+            this.testStore = value;
+          }
+        },
+        /*
+           2.2.1 直接组件标签插入
+         */
+        template:
+          /*
+             4.2.1 在template 中 直接 插入标签 可以使用 <template> v-slot 来传递钩子
+               - `:`拼接的对应着 组件中的 <slot> 的 name
+               - `=`拼接的对应这 组件中的 <slot> 的 其他自定义属性 对象，每一个key都是一个自定义属性的 key
+           */
+          /*
+            6.2 在 template 中添加 自定义参，自定义方法，需要使用全小写 `-` 拼接驼峰字段，
+            - 在自定义事件需要使用修饰符时使用 `.` 字符拼接
+          */
+          /*
+          8.2 在 template 给 组件传递 v-model 直接使用 v-model 指令就可以实现
+         */
+          `
+             <div class="box">
+               <h2> 使用 组件标签直接插入</h2>
+               {{modelValue}}
+                <component-1 
+                  :test-store="testStore" 
+                  @set-test-store="setTestStore"  
+                  attr-value="没有被接收的内容"
+                  v-model="modelValue"
+                >
+                  <template v-slot:header="props">
+                    <div class="slotBox">
+                      <p>我接收的name: {{props.name}}</p>
+                      <p>我接收的age: {{props.age}}</p>
+                    </div>
+                  </template>
+                </component-1>
+                <component-2>
+                  <template v-slot:header="props">
+                    <div class="slotBox">
+                      <p>我接收的name: {{props.name}}</p>
+                      <p>我接收的age: {{props.age}}</p>
+                    </div>
+                  </template>
+                </component-2>
+                <async-component-1 
+                  :test-store="testStore" 
+                  @set-test-store="setTestStore" 
+                  attr-value="没有被接收的内容"
+                  v-model="modelValue"
+                >
+                </async-component-1>
+                <async-component-2></async-component-2>
+              </div>
+
+           ` +
+          /*
+             2.2.2 使用 <component> 组件 引入动态组件
+           */
+          /*
+             4.2.2 使用 <component> 组件 引入动态组件 也 可以使用 <template> v-slot 来传递钩子
+               - `:`拼接的对应着 组件中的 <slot> 的 name
+               - `=`拼接的对应这 组件中的 <slot> 的 其他自定义属性 对象，每一个key都是一个自定义属性的 key
+               - 要注意的如果有两个组件接收了相同的 slot 会造成 传入 slot 相同的问题
+           */
+          `
+             <div class="box">
+               <h2 v-pre >使用 &lt;component&gt; 动态组件</h2>
+               <component :is="componentName">
+                 <template v-slot:header="props">
+                   <div class="slotBox">
+                     <p>我接收的name: {{props.name}}</p>
+                     <p>我接收的age: {{props.age}}</p>
+                   </div>
+                 </template>
+               </component>
+               <select v-model="componentName">
+                 <option v-for="item of componentNames" :value="item" :key="item">{{item}}</option>
+               </select>
+             </div>
+           `
+      });
+      const app = createApp({
+        components: {
+          'use-component-1': useComponent1,
+          'use-component-2': useComponent2
+        }
+      });
+      app.component('component-2', component2);
+      app.mount('#root');
+    </script>
+    <style>
+      .box {
+        border: 1px solid red;
+        background: #eee;
+        padding: 10px;
+        margin: 5px 0;
+      }
+      .box h2 {
+        font-size: 14px;
+      }
+      .slotBox {
+        border: 1px solid blue;
+        padding: 5px;
+        margin: 5px 0;
+      }
+      .slotBox p {
+        padding: 0;
+        margin: 0;
+      }
+    </style>
+  </body>
 </html>
