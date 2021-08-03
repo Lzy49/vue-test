@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>template & render</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      const {
+        h,
+        resolveComponent,
+        resolveDynamicComponent,
+        resolveDirective,
+        withDirectives
+      } = Vue;
+
+      const templateComponent = {
+        data() {
+          return {
+            text: 'v-text',
+            html: '<span style="color:red">v-html</span>',
+            show: true,
+            ifValue: 0,
+            forValue: {
+              value1: 1,
+              value2: 2,
+              value3: 3,
+              value4: 4
+            },
+            eventValues: [
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+            ],
+            bindKey: 'style',
+            svgView: '0 0 10 10',
+            modelValue: '你好',
+            childProps: {
+              name: '张飞',
+              age: 20
+            },
+            componentName: 'slot-component'
+          };
+        },
+        methods: {
+          log(v) {
+            this.forValue.value2++;
+            console.log(v);
+          }
+        },
+        /* 1 指令 */
+        /* 1.1 vue 提供的 v-指令*/
+        template:
+          `
+        <div class="wrap">
+          <div>
+            1.1.1 v-text : <span>{{text}}</span> === <span v-text="text"></span>
+          </div>
+          <div>
+            1.1.2 v-html : <p v-html="html"></p>
+          </div>
+          <div>
+            1.1.3 v-show : <p v-show="show">v-show</p><button @click="show=!show">show</button>
+          </div>
+          <div>
+            <p v-if="ifValue === 0">1.1.4 v-if </p>
+            <p v-else-if="ifValue === 1">1.1.5 v-else-if </p>
+            <p v-else >1.1.6 v-else</p>
+            <button @click="ifValue=ifValue + 1 > 2 ? 0 : ifValue+1">ifValue === {{ifValue}}</button><br>
+          </div>
+          <div>
+            1.1.7 v-for
+            <ul>
+              <li v-for="item of 3" :key="item"> 循环数字{{item}}</li>
+              <li v-for="item of Object.values(forValue)" :key="item"> 循环数字{{item}}</li>
+              <li v-for="(item,key,index) of forValue" :key="item"> 循环数字value:{{item}}key:{{key}}index:{{index}}</li>
+            </ul>
+          </div>
+          <div>
+            1.1.8 v-on
+            <ul>
+              <li> - v-on 调用事件 <button @click="eventValues[0]++">eventValues[0] === {{eventValues[0]}} </button> </li>
+              <li> - @ 调用事件 <button @click="eventValues[1]++">eventValues[1] === {{eventValues[1]}}</button> </li>
+            </ul>
+            1.1.8  v-on 修饰符
+            - 事件修饰符
+            <ul>
+              <li  @click="eventValues[4]++"> - .stop 停止冒泡 event.stopPropagation()。
+                <button @click.stop="eventValues[3]++">
+                  eventValues[3] : {{eventValues[3]}}, eventValues[4]:{{eventValues[4]}}
+                </button>
+              </li>
+              <li>
+                - .prevent - 停止调用 默认事件 event.preventDefault()。
+                <a @click="eventValues[5]++"> eventValues[5]:{{eventValues[5]}}</a>
+              </li>
+              <li @click.capture="log('父')">
+                  - .capture - 开启 内部元素触发的事件先在此处理，然后才交由内部元素进行处理
+                  <button @click="log('子')">capture</button>
+              </li>
+              <li @click.self="log('我有呀')">
+                - .self - 只有 event.target === event.currentTarget 时才触发
+                <button>我自己没事件</button>
+              </li>
+              <li>
+                - .once  只能促发一次
+                <button @click.once="eventValues[6]++">eventValues[6]:{{eventValues[6]}}</button>
+              </li>
+              <li>
+                - .passive 表示肯定促发默认事件
+                <p style="display:block;width:200px;height:100px;background:red;overflow-y:scroll" v-on:scroll.passive="log(1)">
+                  <div style="height:10000px;width:100px; background:green">
+                    {{eventValues[7]}}
+                  </div>
+                </p>
+              </li>
+            </ul>
+            - 按键修饰符
+            <pre>
+              - 更多修饰符：https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key/Key_Values
+              - 常用修饰符：
+                - .enter
+                - .tab
+                - .delete (捕获“删除”和“退格”键)
+                - .esc
+                - .space
+                - .up
+                - .down
+                - .left
+                - .right
+            </pre>
+            <ul>
+              <li>
+                - .enter 回车 按键修饰符
+                <input @keyup.enter="log('input-enter')"   />
+              </li>
+              <li>
+                - .delete 删除 修饰符
+                <input @keyup.delete.prevent="log('input-delete')"   />
+              </li>
+              <li>
+                - .space 空格 修饰符
+                <input @keyup.space="log('input-space')"   />
+              </li>
+            </ul>
+            - 系统修饰键
+            <ul>
+              <li>
+                <button @click.ctrl="log('input-ctrl')">.ctrl  按键修饰符</button>
+              </li>
+              <li>
+                <button @click.alt="log('input-alt')" >.alt 修饰符</button>
+              </li>
+              <li>
+                <button @click.shift="log('input-shift')">.shift 修饰符</button>
+              </li>
+              <li>
+                <button @click.meta="log('input-meta')" >.meta 修饰符</button>
+              </li>
+              <li>
+                <button @click.exact="log('input-exact')">exact 禁止其他 系统修饰键一起使用</button>
+              </li>
+            </ul>
+            - 鼠标按键修饰符
+            <ul>
+              <li>
+                  <button @click.left="log('click-left')"> 左键点击有效 </button>
+              </li>
+              <li>
+                <button @click.middle="log('click-middle')">中键点击有效果</button>
+              </li>
+              <li>
+                <button @click.right.prevent="log('click-right')"> 右键点击有效 </button>
+              </li>
+            </ul>
+          </div>
+          <div>
+            1.1.9 v-bind
+            <ul>
+              <li> - v-bind 绑定单独属性 <button v-bind:style="{color:'red'}"> v-bind 绑定单个属性</button></li>
+              <li> - v-bind 绑定多个属性 <img v-bind="{style:{width:'100px',height:'100px',background:'red'},src:'#'}"/></li>
+              <li> - v-bind 缩写为 : <button :style="{color:'blue'}"> v-bind 缩写 为 :</button></li>
+              <li> - v-bind 动态 key :<button :[bindKey]="{color:'red'}" > v-bind 动态 key</button></li>
+              <li> - v-bind.camel 修饰符 允许驼峰化<svg width="30" height="30" style="border:1px solid #000" :view-box.camel="svgView"></svg></li>
+            </ul>
+          </div>
+          <div>
+            1.1.10 v-model
+            <ul>
+              <li>
+                - v-model 基本用法 <input v-model="modelValue" />
+              </li>
+              <li>
+                - v-model 修饰符 .lazy 表示懒惰检测 ，值检测 change<input v-model.lazy="modelValue" />
+              </li>
+              <li>
+                - v-model 修饰符 .number 表示数字字符，值会转换为Number <input v-model.number="modelValue"/>
+              </li>
+              <li>
+                - v-model 修饰符 .trim 首位空格过滤。 <input v-model.trim="modelValue"/> {{modelValue}}
+              </li>
+              <li>
+                - v-model 为 组件传值 ，组件接收到的是 :modelValue 和 @update:modelValue 连个值
+                <child-component v-model="modelValue"></child-component>
+              </li>
+              <li>
+                - v-model 为子组件传递多个响应值 {{childProps}}
+                <child-component-2 v-model:name="childProps.name" v-model:age="childProps.age"></child-component-2>
+              </li>
+            </ul>
+          </div>
+          <div>
+            1.1.11 v-pre
+            - v-pre 禁止编译 ( 但是组件仍然会被编译，可以使用 &lt , &rt 转义)
+            <p v-pre>{{childProps}}</p>
+          </div>
+          <div>
+            1.1.12 v-once
+            - v-once 只编译一次 页面刷新该值也不会刷新
+            {{childProps}}
+          </div>
+          <div>
+            1.1.13 v-slot
+            <ul>
+              <li> - v-slot 可以缩写为 # </li>
+              <li> - v-slot ：接收一个 name 该 name 和 组件中 slot 组件 name 对应 </li>
+              <li> - v-slot = 接收一个 值 这个值 是 slot 组件传递是  自定义 props  </li>
+            </ul>
+            <slot-component>
+              <template v-slot:header="props">
+                我的名字是 {{props.name}} 我的年纪是 {{props.age}}
+              </template>
+            </slot-component>
+          </div>
+        ` +
+          /* 1.2 vue 提供的 特殊指令*/
+          `
+          <div>
+            1.2.1 :key 该指令为了确定 node 唯一性 经常出现在 for 中 该组件 如果在 transition 组件出现会刷新该组件的动画。
+            <ul>
+              <li v-for="item of 3" :key="item">{{item}}</li>
+            </ul>
+          </div>
+          <div>
+            1.2.2 :ref
+            <ul>
+              <li> - ref 标签为了使用 DOM 本体，或者组件本体可以给组件定义，也可以给 DOM 定义</li>
+              <li> - ref 只能在 mounted 之后调用。</li>
+            </ul>
+            <p ref="testRef">
+              testRef
+            </p>
+            <slot-component ref="slotComponent"></slot-component>
+          </div>
+          <div>
+            1.2.3 :is <br>
+            - is 标签出现在 <component></component> 组件上 接收一个 组件名，该名称 用来给动态切换组件
+            <br>
+            <component :is="componentName"></component>
+          </div>
+        ` +
+          /* 1.3 自定义 指令 directive*/
+          `
+          <div>
+            1.3.1 在 代码中使用 自定义 指令和 v 指令相同  直接使用即可。定义分为两种：<br>
+            - 全局定义 使用 directive app函数 定义 <br>
+            - 局部定义 使用 directives 选项直接定义 <br>
+            <input v-focus>
+            <input v-adaption="modelValue" v-model="modelValue">
+          </div>
+        </div>
+        `,
+        directives: {
+          focus: {
+            mounted(el) {
+              el.focus();
+            }
+          }
+        },
+        mounted() {
+          console.log(this);
+          this.$nextTick(() => {
+            console.log(this.$refs.testRef.innerHTML);
+            console.log(this.$refs.slotComponent.info);
+          });
+        }
+      };
+
+      const renderComponent = {
+        data() {
+          return {
+            inputValue: ''
+          };
+        },
+        render() {
+          /*
+            2. 使用 render
+          */
+          /*
+            2.1  h 标签 接收 3个值
+            - tag 不得为空：
+              - 可以是 DOM tag
+              - 组件 本身
+              - null ( 注释)
+            - option 一些配置包括：
+              - 事件 ：onXXXXX 必须以on开头有
+                - 修饰符 .passive 、.capture 和 .once 驼峰形式拼接
+                - 其他利用 event 来处理
+              - 属性 ：ref, style, attr, 给 组件的 props 都可以直接传入
+            - child:
+              - 接收 一个数组 ： 数组中是一系列 h
+              - 接收 一个对象 ： 该对象表示传递进去的 slot 没一个对象的 key 对应 slot 的 name 对应的值表示自定义属性
+              - 接收 一个字符串： 表示 该 dom 的文本内容
+            2.2 自定义指令：
+              - 利用 resolveDirective 接收一个 directive 该函数接收一个值
+                - 该值是 已注册的 自定义 directive
+              - 利用 withDirectives 包裹 node 接收 2个值
+                - 1. vdom 是 vdom 一般又 h 生成
+                - 2. 一个数组 其中接收了 4个值
+                  - 1. 被 resolveDirective 初始化的 directive
+                  - 2. 该 directive 指向的 value
+                  - 3. String 该 directive ：对应的值
+                  - 4. Object 指令修饰符 集合
+            2.3 组件
+              - 组件一般使用 resolveComponent，resolveDynamicComponent 接收 tag 来接收 组件，或者直接引入 组件本体
+            2.4 其他
+              - 合并 h 选项 option  时 可以使用 mergeProps 接收多个对象抛出一个合并后的单独对象。
+          */
+          const adaption = resolveDirective('adaption');
+          // resolveDynamicComponent()
+          const input = withDirectives(
+            h('input', {
+              onInput: ({ target }) => {
+                this.inputValue = target.value;
+              }
+            }),
+            [[adaption, this.inputValue]]
+          );
+          // console.log(input)
+          return h('div', {}, [
+            h('div', {}, this.inputValue),
+            h('div', {}, '傻了'),
+            h(
+              'button',
+              {
+                onClickOnce: () => {
+                  console.log('只能点击一次');
+                }
+              },
+              'click'
+            ),
+            input,
+            h(
+              slotComponent,
+              {},
+              {
+                header: (props) => `我的名字${props.name},我的年纪${props.age}`
+              }
+            )
+          ]);
+        }
+      };
+      const slotComponent = {
+        /*
+          使用 slot
+        */
+        data() {
+          return {
+            info: {
+              name: '张飞',
+              age: 22
+            }
+          };
+        },
+        template: `
+          <slot name="header" v-bind="info">
+            我的父组件没有传递内容过来
+          </slot>
+        `
+      };
+      const childComponent = {
+        props: {
+          modelValue: String
+        },
+        emits: ['update:modelValue'],
+        render() {
+          return h('div', {}, [
+            h('input', {
+              onChange: (event) => {
+                this.$emit('update:modelValue', event.target.value);
+              },
+              value: this.modelValue
+            })
+          ]);
+        }
+      };
+      const childComponent2 = {
+        props: {
+          name: String,
+          age: Number
+        },
+        emits: ['update:name', 'update:age'],
+        render() {
+          return h('div', {}, [
+            h('input', {
+              value: this.name,
+              onChange: (event) => {
+                console.log(event.target.value);
+                this.$emit('update:name', event.target.value);
+              }
+            }),
+            h('input', {
+              value: this.age,
+              onChange: (event) => {
+                this.$emit('update:age', Number(event.target.value));
+              }
+            })
+          ]);
+        }
+      };
+      const app = Vue.createApp({
+        render() {
+          return h('div', {}, [h(templateComponent), h(renderComponent)]);
+        }
+      });
+      app.component('child-component', childComponent);
+      app.component('child-component-2', childComponent2);
+      app.component('slot-component', slotComponent);
+      /* 全局定义自定义指令 */
+      app.directive('adaption', {
+        mounted(el) {
+          console.log(el);
+          el.style.borderColor = 'red';
+          el.style.borderWidth = '1px';
+          el.style.borderStyle = 'solid';
+          el.style.outline = 'none';
+        },
+        beforeUpdate(el) {
+          el.style.borderColor = 'blue';
+        },
+        updated(el) {
+          setTimeout(() => {
+            el.style.borderColor = 'green';
+          }, 100);
+        }
+      });
+      app.mount('#root');
+    </script>
+    <style>
+      .wrap div {
+        border: 1px solid red;
+        background: #eee;
+        margin: 5px 0;
+        padding: 5px;
+      }
+      .wrap p {
+        display: inline;
+      }
+      ul,
+      li {
+        padding: 0;
+        margin: 0;
+        border: 0;
+      }
+      li {
+        list-style: none;
+      }
+      a {
+        color: blue;
+      }
+    </style>
+  </body>
+</html>

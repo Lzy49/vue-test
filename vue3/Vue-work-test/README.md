@@ -410,3 +410,115 @@
 - 在 `template` 中 给 组件传递 `v-model` 直接使用 `v-model` 指令就可以实现
 
 ## 5. 模版渲染
+### 1 template 渲染
+#### 1.1 v 指令
+- 1.1.1 v-text 
+- 1.1.2 v-html
+- 1.1.3 v-show
+- 1.1.4 v-if
+- 1.1.5 v-else-if
+- 1.1.6 v-else
+- 1.1.7 v-for
+  - (item,index) of 3
+  - (item,key) of []
+  - (item,key,index) of Object
+  - item in 3
+- 1.1.8 v-on
+  - v-on 简写 @
+  - v-on 修饰符
+    - 事件修饰符
+      - @click.stop 停止冒泡 event.stopPropagation
+      - @click.prevent 停用默认事件 event.preventDefault
+      - @click.captrue 最先处理事件
+      - @click.self 只有事件发生node 和 定义 node 相同才处理
+      - @click.once 值促发一次
+      - @click.passive 表示一定促发默认事件
+    - 按键修饰符
+      - 更多修饰符：https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key/Key_Values
+      - 常用修饰符：
+        - .enter
+        - .tab
+        - .delete (捕获“删除”和“退格”键)
+        - .esc
+        - .space
+        - .up
+        - .down
+        - .left
+        - .right
+      - 系统修饰键
+        - ctrl
+        - alt
+        - shift
+        - meta
+        - exact 禁止其他 系统修饰键一起使用
+      - 鼠标按键修饰符
+        - @click.left 左
+        - @click.middle 中
+        - @click.right 右
+- 1.1.9 v-bind
+  - v-bind:key="value" 绑定单独属性
+  - v-bind = "values" 绑定多个属性
+  - :key="value" 缩写
+  - :\[key\]="" 动态key
+  - v-bind.camel 允许驼峰化
+- 1.1.10 v-model
+  - 修饰符
+    - .lazy 表示懒惰检测 ，值检测 change
+    - .number 表示数字字符，值会转换为Number
+    - .trim 首位空格过滤。
+  - 给组件传递值
+    - v-model="xxx" 子组件 props:modelValue,emits:update:modelValue
+    - v-model:xx="xxx" 子组件 props:xx,emits: update:xx
+- 1.1.11 v-pre
+  - v-pre 禁止编译 ( 但是组件仍然会被编译，可以使用 &lt , &rt 转义)
+- 1.1.12 v-once
+  - v-once 只编译一次 页面刷新该值也不会刷新
+- 1.1.13 v-slot
+ - v-slot 可以缩写为 # 
+ - v-slot ：接收一个 name 该 name 和 组件中 slot 组件 name 对应 
+ - v-slot = 接收一个 值 这个值 是 slot 组件传递是  自定义 props  
+#### 1.2 特殊指令
+- 1.2.1 :key 
+  - 该指令为了确定 node 唯一性 经常出现在 for 中 该组件 如果在 transition 组件出现会刷新该组件的动画。
+- 1.2.2 :ref
+  - ref 标签为了使用 DOM 本体，或者组件本体可以给组件定义，也可以给 DOM 定义
+  - ref 只能在 mounted 之后调用。
+- 1.2.3 :is
+  - is 标签出现在 <component></component> 组件上 接收一个 组件名，该名称 用来给动态切换组件
+#### 1.3 自定义 指令
+在 代码中使用 自定义 指令和 v 指令相同  直接使用即可。定义分为两种：
+- 全局定义 使用 directive app函数 定义 <br>
+- 局部定义 使用 directives 选项直接定义 <br>
+```
+<input v-focus>
+<input v-adaption="modelValue" v-model="modelValue"> 
+```
+### 2 render 函数
+#### 2.1  h 标签 接收 3个值
+- tag 不得为空：
+  - 可以是 DOM tag
+  - 组件 本身
+  - null ( 注释)
+- option 一些配置包括：
+  - 事件 ：onXXXXX 必须以on开头有
+    - 修饰符 .passive 、.capture 和 .once 驼峰形式拼接
+    - 其他利用 event 来处理
+  - 属性 ：ref, style, attr, 给 组件的 props 都可以直接传入
+- child:
+  - 接收 一个数组 ： 数组中是一系列 h
+  - 接收 一个对象 ： 该对象表示传递进去的 slot 没一个对象的 key 对应 slot 的 name 对应的值表示自定义属性
+  - 接收 一个字符串： 表示 该 dom 的文本内容
+#### 2.2 自定义指令：
+- 利用 resolveDirective 接收一个 directive 该函数接收一个值
+  - 该值是 已注册的 自定义 directive
+- 利用 withDirectives 包裹 node 接收 2个值
+  1. vdom 是 vdom 一般又 h 生成
+  2. 一个数组 其中接收了 4个值
+    1. 被 resolveDirective 初始化的 directive
+    2. 该 directive 指向的 value
+    3. String 该 directive ：对应的值
+    4. Object 指令修饰符 集合
+#### 2.3 组件
+- 组件一般使用 resolveComponent，resolveDynamicComponent 接收 tag 来接收 组件，或者直接引入 组件本体
+#### 2.4 其他
+- 合并 h 选项 option  时 可以使用 mergeProps 接收多个对象抛出一个合并后的单独对象。
