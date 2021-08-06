@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>provide&inject</title>
+  </head>
+  <body>
+    <div id="root">
+      <div>
+        <child-component></child-component>
+        <child-component-2></child-component-2>
+        <button @click="appProvide.name = '张飞'">appProvide</button>
+        <button @click="appProvideReactive.name = '张飞'">
+          appProvideReactive
+        </button>
+        <button @click="appProvideRendonly.name = '张飞'">
+          appProvideRendonly - 1
+        </button>
+        <button @click="setAppProvideRendonly('张飞')">
+          appProvideRendonly - 2
+        </button>
+        <button @click="setComponentProvide('张飞')">componentProvide</button>
+        <button @click="reactiveData.name = '张飞'">
+          {{reactiveData.name}}
+        </button>
+        <child-component-3></child-component-3>
+      </div>
+    </div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      const { createApp, reactive, readonly, computed, provide, inject, h } =
+        Vue;
+      // 4 使用 inject 选项引入
+      // - 用 inject 选项引入时，可以传入一个 Array
+      const childComponent = {
+        inject: [
+          'appProvide',
+          'appProvideReactive',
+          'appProvideRendonly',
+          'componentProvide',
+          'componentReactive',
+          'componentComputedReactive'
+        ],
+        template: `
+          <div>
+            <div>appProvide name : {{appProvide.name}}</div>
+            <div>appProvideRendonly name : {{appProvideRendonly.name}}</div>
+            <div>appProvideReactive name : {{appProvideReactive.name}}</div>
+            <div>componentProvide name:{{componentProvide.name}}</div>
+            <div>componentReactive name:{{componentReactive.name}}</div>
+            <div>componentComputedReactive name:{{componentComputedReactive.value.name}}</div>
+          </div>
+
+        `
+      };
+      // - 用 inject 选项引入时，也可以使用 Object
+      /*
+        - 对象的 
+          - key 是 本地绑定名，
+          - value 是：
+            - from provide 中的某一个key
+            - default 默认值
+      */
+      const childComponent2 = {
+        inject: {
+          v1: {
+            from: 'appProvide'
+          },
+          v2: {
+            from: 'appProvideReactive'
+          },
+          v3: {
+            from: 'appProvideRendonly'
+          },
+          v4: {
+            from: 'componentProvide'
+          },
+          v5: {
+            from: 'componentReactive'
+          },
+          v6: {
+            from: 'componentComputedReactive'
+          }
+        },
+        created() {},
+        template: `
+          <div>
+            <div>appProvide name : {{v1.name}}</div>
+            <div>appProvideRendonly name : {{v2.name}}</div>
+            <div>appProvideReactive name : {{v3.name}}</div>
+            <div>componentProvide name:{{v4.name}}</div>
+            <div>componentReactive name:{{v5.name}}</div>
+            <div>componentComputedReactive name:{{v6.value.name}}</div>
+          </div>
+
+        `
+      };
+      const componentProvide = {
+        name: 'component'
+      };
+      const app = createApp({
+        components: { childComponent, childComponent2 },
+        inject: [
+          'appProvide',
+          'appProvideReactive',
+          'appProvideRendonly',
+          'setAppProvideRendonly'
+        ],
+        // 2 组件中的 provide
+
+        provide() {
+          console.log(computed(this.reactiveData));
+          return {
+            // 2.1 非响应
+            componentProvide,
+            // 2.2 响应
+            componentReactive: this.reactiveData,
+            // 2.3 利用计算属性
+            componentComputedReactive: computed(() => ({
+              name: this.reactiveData.name + 'computed'
+            }))
+          };
+        },
+        data() {
+          return {
+            reactiveData: {
+              name: 'componentReactiveData'
+            }
+          };
+        },
+        created() {
+          console.log(this.appProvide);
+          console.log(this.appProvideReactive);
+          console.log(this.appProvideRendonly);
+        },
+        methods: {
+          setComponentProvide(name) {
+            componentProvide.name = name;
+          }
+        }
+      });
+      // 5 在 setup 中使用 inject
+      // 3 在 setup 中使用 Provide
+      // - 使用 provide 传入两个只 key ,value
+      const childComponent4 = {
+        setup() {
+          const store = inject('store');
+          console.log(store)
+          return () => ('div', {}, store.name);
+        }
+      };
+      const childComponent3 = {
+        setup() {
+          const store = reactive({
+            name: 'setup-store'
+          });
+          provide('store', store);
+          return () =>
+            h('div', null, [
+              h(childComponent4, {}),
+              h('button', {
+                onClick() {
+                  store.name = '张飞';
+                }
+              },'setup-store')
+            ]);
+        }
+      };
+      app.component('childComponent3',childComponent3)
+      // 1. 全局配置
+      // 1.1 全局 普通值
+      app.provide('appProvide', {
+        name: 'app'
+      });
+      // 1.2 全局 响应值
+      // - 虽然可以使用响应值，但是响应值会被导出修改，造成数据被随处更改
+      app.provide(
+        'appProvideReactive',
+        reactive({
+          name: 'appReactive'
+        })
+      );
+      const appProvideRendonly = reactive({
+        name: 'appReactiveReadonly'
+      });
+      // - 使用readonly 包裹 响应数据，数据无法被修改，可以设置 修改方法进行修改。
+      app.provide('appProvideRendonly', readonly(appProvideRendonly));
+      app.provide('setAppProvideRendonly', (value) => {
+        appProvideRendonly.name = value;
+      });
+      app.mount('#root');
+    </script>
+  </body>
+</html>

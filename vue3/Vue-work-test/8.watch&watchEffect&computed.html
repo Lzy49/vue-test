@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>watch&watchEffect&computed</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      const { createApp, h, watch, watchEffect, computed, reactive, ref } = Vue;
+      const component1 = {
+        setup() {
+          const store = reactive({
+            name: '张飞',
+            info: {
+              info: {
+                info: {
+                  name: '张三'
+                }
+              }
+            }
+          });
+          const name = ref('name');
+          /*
+            1. watch
+            - watch 检测指定的值执行某方法。接收两个参数
+              - 值
+                - ref or reactive 值
+                - [] 数组中的每个值都是 ref or reactive
+                - function : 返回 一个 值，该值可以是 reactive 中的某一个值 也可以是 ref 的 value 值，也可以是数组
+              - 执行方法
+                - 接收两个参数
+                  - 新值
+                  - 旧值
+              - 其他 option
+                - deep 深度检测
+                - immediate 初始化时执行一次
+                - flush 更新时机
+                  - pre 之前
+                  - sync 同时
+                  - post 之后
+          */
+          // 监听一个值
+          watch(store, (newValue, oldValue) => {
+            console.log('watch 一个值', newValue, oldValue);
+          });
+          watch([store, name], (newValue, onldValue) => {
+            console.log('watch 多个值', newValue, onldValue);
+          });
+          watch(
+            () => [store.name, name.value],
+            (newValue, onldValue) => {
+              console.log(
+                'watch 仅检测 store 单个值 和 name的value',
+                newValue,
+                onldValue
+              );
+            }
+          );
+          /*
+            computed 计算属性 
+            - 接收一个对象 或者 函数
+              - 接收对象是分别需要两个 属性（get,set)
+              - 接收函数时相当于接收一个 get 
+          */
+          const computedValue = computed(() => store.name + '10086');
+          /*
+            watchEffect
+            - 接收一个函数，该函数创建一个作用域。在该作用域中使用到的响应值发生改变时，都会运行一次该函数
+          */
+          watchEffect(() => {
+            console.log('watchEffect', store.name, name.value);
+            console.log('computedValue', computedValue.value);
+          });
+          return () => {
+            return h('div', null, [
+              h(
+                'button',
+                {
+                  onClick: () => {
+                    store.name = '王武';
+                  }
+                },
+                'set store name'
+              ),
+              h(
+                'button',
+                {
+                  onClick: () => {
+                    store.info.info.info.name = '深度检测';
+                  }
+                },
+                'set store info name'
+              ),
+              h(
+                'button',
+                {
+                  onClick: () => {
+                    name.value = 'newName';
+                  }
+                },
+                'set name ref'
+              )
+            ]);
+          };
+        }
+      };
+      const component2 = {
+        data() {
+          return {
+            name: 'name'
+          };
+        },
+        created() {
+          /*
+            watch 在实例中也可以使用 配置 与 watch 相同有 3个参数 value,func,option
+          */
+          this.$watch(this.name, () => {
+            console.log('this.name更新了');
+            console.log('this.wangName:', this.wangName);
+          });
+        },
+        template: `<div> <button @click="name='飞天'">setname</button></div>`,
+        computed: {
+          wangName() {
+            return this.name + '王';
+          }
+        },
+        watch:{
+          name(){
+            console.log('this.name 更新了')
+          }
+        }
+      };
+      const component3 = {};
+      const app = createApp({
+        render() {
+          return h('div', null, [h(component1), h(component2), h(component3)]);
+        }
+      });
+      app.mount('#root');
+    </script>
+  </body>
+</html>

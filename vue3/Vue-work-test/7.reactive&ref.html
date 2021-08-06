@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>reactivity</title>
+  </head>
+  <body>
+    <div id="root">
+      {{store.name}},{{rawObj.name}},{{shallowStore.info.name}}
+    </div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      const {
+        createApp,
+        reactive,
+        readonly,
+        isReactive,
+        isProxy,
+        toRaw,
+        markRaw,
+        shallowReactive,
+        shallowReadonly,
+        ref,
+        unref,
+        toRef,
+        toRefs,
+        isRef,
+        watch,
+        shallowRef,
+        triggerRef,
+        customRef
+      } = Vue;
+      const app = createApp({
+        setup() {
+          //1 reactive 相关
+          /*
+            1.1 reactive 相关的响应性的内容;
+            - reactive 接收一个参数，该参数是一个Object。
+            - reactive 返回一个对象副本（Proxy)
+          */
+          const store = reactive({
+            name: 'reactive-store-name',
+            info: {
+              name: '张三丰'
+            }
+          });
+          /*
+            1.2 isReactive 检查值是不是一个响应值
+            - isReactive 判断一个值是不是 reactive 创建的 响应值，即使它被 readonly 包裹也可以判断
+          */
+          console.log(
+            isReactive(store),
+            isReactive(readonly(store)),
+            isReactive(readonly({ name: 'store' }))
+          ); // => true, ture, false
+          /*
+            1.3 readonly 返回只读响应值
+            - reactive 返回值是一个 修改后 全局响应的 store。如果想提供一个只读的响应值可以使用readonly 函数包裹
+            - readonly 接收 一个 值 该值可以是  纯对象，reactive 响应值 ，ref 返回一个只读值
+          */
+          const readOnlyStore = readonly(store);
+          console.log(readOnlyStore.name); // => reactive-store-name
+          readOnlyStore.name = 'readonly-store-name'; // warning
+          store.name = 'new-store-name';
+          console.log(readOnlyStore.name); // => new-store-name
+
+          /*
+            1.4 isProxy 判断值是不是 readonly 或 reactive 创建的对象
+            - 接收一个参数 返回 Boolean
+          */
+          console.log(
+            isProxy(store),
+            isProxy(readonly({ name: '张' })),
+            isProxy(new Proxy({ name: '张' }, {}))
+          ); // => true, true, false
+
+          /*
+            1.5 isReadonly 判断一个值是不是 readonly 包裹的值
+          */
+          console.log(isProxy(readonly({ name: '张' })), isProxy(store)); // true, true
+          /*
+            1.6 toRaw 返回 readonly , reactive 包裹实例
+          */
+          const storeObj = {
+            name: '飞'
+          };
+          const store2 = reactive(storeObj);
+          console.log(
+            storeObj === store2,
+            storeObj === toRaw(readonly(store2)),
+            storeObj === toRaw(store2)
+          ); // => false, true, true
+          /*
+            1.7 markRaw 设置一个对象永远无法生成 reactive 响应值
+          */
+          const rawObj = markRaw({
+            name: '张飞'
+          });
+          console.log(reactive(rawObj) === rawObj); // true
+          /*
+            1.8 shallowReactive 创建一个浅响应值（只响应第一层，内部不做检测）
+          */
+          const shallowStore = shallowReactive({
+            info: {
+              name: '张飞'
+            }
+          });
+          console.log(shallowStore.info.name);
+          setTimeout(() => {
+            shallowStore.info.name = '王武';
+            console.log(shallowStore.info.name);
+          }, 1000);
+          /*
+            1.9 shallowReadonly 创建一个浅只读值，该值第一层以外的值可以被修改
+          */
+          const shallowReadOnlyStore = shallowReadonly(store);
+          shallowReadOnlyStore.info.name = '张无忌';
+          console.log(store.info.name); // => 张无忌
+
+          /*
+            2. refs
+            2.1 ref  创建一个响应值。该值一般是基础类型，取值需要使用 ref.value
+            - ref 可以在定义 reactive 时使用，该值会自动转换 value 值
+              - 接收一个基础值，该值会被 ref 响应，value = value
+              - 接收一个引用值，该值会被 ref 响应，value = reactive(value)
+            - ref 在 setup return 时也会做出响应的简化
+            - ref 和 reactive 是不同的，ref是浅层的，当给ref传入的值是一个引用值，只会检测该值的地址改变，而不会检测内部的每一个值
+
+          */
+          const name = ref('张飞');
+          const refStore = reactive({
+            name
+          });
+          const refObject = ref({
+            name: '值'
+          });
+          console.log(name.value); // 张飞
+          console.log(refStore.name); // 张飞
+          console.log('喝点', isReactive(refObject.value));
+          watch(store, (v) => {
+            console.log('store 被改变', v);
+          });
+          watch(refObject, (v) => {
+            console.log('refStore被改变', v);
+          });
+          watch(refObject.value, (v) => {
+            console.log('refStore value 被改变');
+          });
+          setTimeout(() => {
+            store.info.name = '1';
+            refObject.value.name = '2';
+          }, 1000);
+          setTimeout(() => {
+            store.info.name = '2';
+            refObject.value = {};
+          }, 2000);
+          /*
+
+
+            2.2 unref接收一个ref，返回该值的原始值
+          */
+          console.log(unref(name)); // 张飞
+          /*
+            2.3 toRef  和 toRefs
+            - 因为 reactive 产出值是一个 响应值，如果使用es6 的解构方法会对其响应性进行破坏。使用 toRef 或 toRefs 可以很好解决。
+            - toRef 接收两个值 reactive 响应值 和 返回值的 key。 抛出一个 ref 值。
+            - toRefs 接收一个值 reactive 响应值。返回一个一个对象，该对象的每一个值都是一个 ref值。同时该对象也可以使用 ES6 进行解构
+          */
+          /*
+            通过 toRef 解构
+          */
+          const storeName = toRef(store, 'name');
+          console.log(storeName.value); // => new-store-name
+          storeName.value = 'storeName';
+          console.log(store.name); // => storeName
+          /*
+            使用 toRefs 解构
+          */
+          const { name: refName, info: refInfo } = toRefs(store);
+          refName.value = 'refs';
+          refInfo.value.name = 'refs';
+          console.log(store.name, store.info.name); // => refs,refs
+          /*
+            2.4 shallowRef 创建一个浅检测值。
+            - 接收值 是一个 引用类型时 value = shallowReactive
+          */
+          const refDome = {
+            info: {
+              name: '张'
+            }
+          };
+          const shallowV = shallowRef({ refDome });
+          console.log(isReactive(shallowV.value)); // false
+          /*
+            2.5 triggerRef 接收 shallowRef 手动促发 shallowRef 的 相关检测 （watch,watchEffect)
+          */
+          watch(shallowV, () => {
+            console.log('shallowV');
+          });
+          setTimeout(() => {
+            triggerRef(shallowV);
+          }, 1000);
+          /*
+            2.6 customRef 自定义 ref 接收一个函数 handlerFun
+            - handlerFun 接收两个参数
+              - track 收集一个依赖
+              - trigger 促发所有依赖
+            - 返回一个对象，对象需要两个值
+              - set 当 设置 value 时促发
+              - get 当 获取 value 时促发
+          */
+          let globalTrigger = null;
+          const customValue = (function (value) {
+            return customRef(function (track, trigger) {
+              globalTrigger = trigger;
+              return {
+                set(v) {
+                  value = v;
+                },
+                get() {
+                  track();
+                  return value;
+                }
+              };
+            });
+          })(100);
+          watch(customValue, () => {
+            console.log('tirgger 不执行我不动',customValue.value);
+          });
+          customValue.value = 200;
+          setTimeout(()=>{
+            console.log('----- 执行 -------')
+            globalTrigger()
+          },5000)
+
+
+          return {
+            store,
+            rawObj,
+            shallowStore
+          };
+        },
+        created() {
+          this.rawObj.name = '飞机';
+        }
+      });
+      app.mount('#root');
+    </script>
+  </body>
+</html>
