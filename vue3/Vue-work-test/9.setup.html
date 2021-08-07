@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      const {
+        createApp,
+        onBeforeMount,
+        onMounted,
+        onBeforeUpdate,
+        onUpdated,
+        onBeforeUnmount,
+        onUnmounted,
+        onErrorCaptured,
+        onRenderTracked,
+        onRenderTriggered,
+        onActivated,
+        onDeactivated,
+        provide,
+        inject,
+        reactive,
+        readonly,
+        defineComponent,
+        resolveComponent,
+        h,
+        watch,
+        watchEffect,
+        computed
+      } = Vue;
+      const app = createApp({
+        setup() {
+          /*
+            1. 使用生命周期钩子
+          */
+          onBeforeMount(() => {
+            console.log('beforeMount');
+          });
+          onMounted(() => {
+            console.log('mounted');
+          });
+          onBeforeUpdate(() => {
+            console.log('beforeUpdate');
+          });
+          onUpdated(() => {
+            console.log('updated');
+          });
+          onBeforeUnmount(() => {
+            console.log('beforeUnmount');
+          });
+          onUnmounted(() => {
+            console.log('unmounted');
+          });
+          /*
+            reactive & ref
+          */
+          const store = reactive({
+            name: 'store'
+          });
+          /*
+            watch & watchEffect & computed
+          */
+          watch(store, () => {
+            console.log(`watch log: store's name is ${store.name}`);
+          });
+          watchEffect(() => {
+            console.log(`watchEffect log : store's name is ${store.name}`);
+          });
+          const storename = computed(() => store.name);
+          /*
+            Provide&inject
+          */
+          provide('storename', readonly(storename));
+          /*
+            component
+          */
+          const child = resolveComponent('child-component');
+          return () => {
+            console.log('1');
+            return h('div', {}, [
+              h(
+                child,
+                {
+                  onLog() {
+                    console.log('this is parent component');
+                  },
+                  childProps: 'this is childProps',
+                  childAttrs: 'this is childAttrs'
+                },
+                {
+                  header: (props) => h('div', {}, props.name)
+                }
+              ),
+              h(
+                'button',
+                {
+                  onClick() {
+                    store.name = 'new store name';
+                  }
+                },
+                'setStore'
+              )
+            ]);
+          };
+        }
+      });
+      const component = defineComponent({
+        /*
+          props & emits
+        */
+        props: ['childProps'],
+        emits: ['log'],
+        setup(props, context) {
+          /*
+            inject
+          */
+          const name = inject('storename');
+
+          name.value = 'child-storename'; // warning
+          /*
+            props & emits & attrs & slots
+          */
+          console.log(props.childProps); // props
+          console.log(context.attrs.childAttrs); //attrs
+          console.log(context.emit('log')); // emit
+          console.log(context.slots); // slots
+        
+          return () => h('div', {}, context.slots.header({name:name.value}));
+        }
+      });
+      app.component('child-component', component);
+      app.mount('#root');
+    </script>
+  </body>
+</html>
