@@ -15,7 +15,7 @@ export default {
   closeBundle() {
     console.log('my-test-plugin close');
   },
-  config(config, { command }) {
+  config(config, { command }) { 
     // 配置 config
     if (command === 'dev') {
       config.root = '/';
