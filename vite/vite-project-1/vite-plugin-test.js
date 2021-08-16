@@ -34,7 +34,7 @@ export default {
   transformIndexHtml(html) {
     // 处理文本
     console.log(html)
-    return `<div>你好</div>`
+    // return `<div>你好</div>`
   },
   handleHotUpdate(ctx){
     // HMR
