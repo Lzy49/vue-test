@@ -10,7 +10,7 @@ export default [
   {
     path: '/router-view/',
     component: () => import('../router-api-page/router-view.vue'),
-    name:'parent',
+    name: 'parent',
     children: [
       {
         path: 'page1',
@@ -24,10 +24,16 @@ export default [
   },
   {
     path: '/composition/:id',
-    component: () => import('../router-api-page/composition.vue')
+    component: () => import('../router-api-page/composition.vue'),
+    meta: {
+      title: 'test'
+    }
   },
   {
     path: '/router-test',
-    component: () => import('../router-api-page/router.vue')
+    component: () => import('../router-api-page/router.vue'),
+    meta: {
+      title: 'xx'
+    }
   }
 ];

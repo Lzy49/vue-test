@@ -12,6 +12,9 @@ export default [
   },
   {
     path: '/:class/detail/:id',
+    beforeEnter: () => {
+      console.log('%c  beforeEnter', 'color:green');
+    },
     component: () => import('../pages/detail/detail.vue')
   },
   {
@@ -91,6 +94,6 @@ export default [
   },
   {
     path: '/scroll-1',
-    component: () => import('../pages/scroll.vue'),
+    component: () => import('../pages/scroll.vue')
   }
 ];

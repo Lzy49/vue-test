@@ -36,18 +36,6 @@ console.log(router.getRoutes());
 console.log(router.hasRoute('test'));
 // 守卫test
 console.log(router.isReady());
-router.beforeEach(() => {
-  console.log('beforeEach');
-});
-router.beforeResolve(() => {
-  console.log('beforeResolve');
-});
-router.afterEach(() => {
-  console.log('afterEach');
-  console.error('报错啦！');
-});
-router.onError((err) => {
-  console.log(err);
-});
+
 console.log(router.resolve('/'));
 </script>
