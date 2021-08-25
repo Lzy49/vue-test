@@ -1,12 +1,14 @@
 <template>
   <img alt="Vue logo" src="./assets/logo.png" />
-  <!-- <HelloWorld msg="Hello Vue 3 + Vite" /> -->
+  <HelloWorld />
   <test />
+  <Input input-key="name" />
 </template>
 
 <script setup>
 import HelloWorld from './components/HelloWorld.vue';
 import test from './components/test.vue';
+import Input from './components/input.vue';
 import { useStore } from 'vuex';
 const store = useStore();
 store.commit('setName', '浏阳');
