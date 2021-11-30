@@ -1,7 +1,13 @@
-# 关于vue的一些练习
-## VUE2
-- test1 关于 插槽的学习
-## VUE3
-- test1 
-  - 关于 vdom 学习
-  - 关于 双向绑定 学习
+# 日常学习 vue 的练习
+## 当前学习进度
+- vue3 
+- vuex 
+- vite 
+- vue-router
+## 未学习
+- vue3 + naiveui + vite  构建一套后台框架
+- vue3 + naiveui + vite 实战两个项目
+- vue3 源码
+- vuex 源码
+- vue-router 源码
+- vite 源码
